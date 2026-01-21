@@ -1,0 +1,2 @@
+createSrcSidebar('[["tetrad",["",[["cli",[],["commands.rs","mod.rs"]],["consensus",[],["mod.rs"]],["executors",[],["base.rs","codex.rs","gemini.rs","mod.rs","qwen.rs"]],["hooks",[],["mod.rs"]],["mcp",[],["mod.rs"]],["reasoning",[],["mod.rs"]],["types",[],["config.rs","errors.rs","mod.rs","requests.rs","responses.rs"]]],["lib.rs"]]]]');
+//{"start":19,"fragment_lengths":[314]}

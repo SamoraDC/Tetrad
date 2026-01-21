@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["config","doctor","init","serve","status","version"]};

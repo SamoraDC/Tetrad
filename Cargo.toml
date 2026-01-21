@@ -1,0 +1,73 @@
+[package]
+name = "tetrad"
+version = "0.1.0"
+edition = "2021"
+authors = ["SamoraDC"]
+description = "MCP de Consenso Quádruplo para Claude Code - Valida código usando Codex, Gemini e Qwen"
+license = "MIT"
+repository = "https://github.com/SamoraDC/tetrad"
+homepage = "https://github.com/SamoraDC/tetrad"
+documentation = "https://docs.rs/tetrad"
+readme = "README.md"
+keywords = ["mcp", "claude", "code-review", "ai", "consensus"]
+categories = ["development-tools", "command-line-utilities"]
+
+[lib]
+name = "tetrad"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tetrad"
+path = "src/main.rs"
+
+[features]
+default = ["cli", "sqlite"]
+cli = ["clap", "dialoguer", "indicatif"]
+sqlite = ["rusqlite"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.45", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# CLI
+clap = { version = "4.5", features = ["derive"], optional = true }
+dialoguer = { version = "0.11", optional = true }
+indicatif = { version = "0.17", optional = true }
+
+# Database
+rusqlite = { version = "0.32", features = ["bundled"], optional = true }
+
+# Hashing
+sha2 = "0.10"
+hex = "0.4"
+
+# Configuration
+toml = "0.8"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Utilities
+uuid = { version = "1.11", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.14"
+assert_cmd = "2.0"
+predicates = "3.1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
