@@ -1183,18 +1183,21 @@ steps:
 
 ## 12. Roadmap de Implementação (Atualizado)
 
-### Fase 1: Fundação (Semana 1)
-- [ ] Setup projeto Rust com estrutura de crate publicável
-- [ ] CLI básico com clap (init, serve, status)
-- [ ] Implementar trait CliExecutor
-- [ ] Testes unitários básicos
+### Fase 1: Fundação (Semana 1) ✅ COMPLETA
+- [x] Setup projeto Rust com estrutura de crate publicável
+- [x] CLI básico com clap (init, serve, status, config, doctor, version)
+- [x] Implementar trait CliExecutor
+- [x] Testes unitários básicos (12 testes passando)
+- [x] CodexExecutor, GeminiExecutor, QwenExecutor implementados
+- [x] Health checks com `is_available()` e `version()`
+- [x] Parsing robusto de JSON com `ExecutorResponse::parse_from_output()`
 
-### Fase 2: Executores (Semana 2)
-- [ ] CodexExecutor
-- [ ] GeminiExecutor
-- [ ] QwenExecutor
-- [ ] Health checks
-- [ ] Parsing robusto de JSON
+### Fase 2: Executores (Semana 2) ✅ COMPLETA (incluída na Fase 1)
+- [x] CodexExecutor
+- [x] GeminiExecutor
+- [x] QwenExecutor
+- [x] Health checks
+- [x] Parsing robusto de JSON
 
 ### Fase 3: Consenso + ReasoningBank (Semana 3)
 - [ ] Motor de consenso
