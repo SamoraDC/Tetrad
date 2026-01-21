@@ -5,6 +5,7 @@ use std::time::Duration;
 use tokio::process::Command;
 
 use super::base::{CliExecutor, ExecutorResponse};
+use crate::types::config::ExecutorConfig;
 use crate::types::requests::EvaluationRequest;
 use crate::types::responses::{ModelVote, Vote};
 use crate::{TetradError, TetradResult};
@@ -13,14 +14,28 @@ use crate::{TetradError, TetradResult};
 ///
 /// Especialização: Sintaxe e convenções de código.
 pub struct CodexExecutor {
+    command_name: String,
+    args: Vec<String>,
     timeout: Duration,
 }
 
 impl CodexExecutor {
-    /// Cria um novo executor Codex.
+    /// Cria um novo executor Codex com valores padrão.
     pub fn new() -> Self {
         Self {
+            command_name: "codex".to_string(),
+            // Prompt é passado como argumento posicional
+            args: vec![],
             timeout: Duration::from_secs(30),
+        }
+    }
+
+    /// Cria executor a partir da configuração do TOML.
+    pub fn from_config(config: &ExecutorConfig) -> Self {
+        Self {
+            command_name: config.command.clone(),
+            args: config.args.clone(),
+            timeout: Duration::from_secs(config.timeout_secs),
         }
     }
 
@@ -45,7 +60,7 @@ impl CliExecutor for CodexExecutor {
     }
 
     fn command(&self) -> &str {
-        "codex"
+        &self.command_name
     }
 
     fn specialization(&self) -> &str {
@@ -55,12 +70,15 @@ impl CliExecutor for CodexExecutor {
     async fn evaluate(&self, request: &EvaluationRequest) -> TetradResult<ModelVote> {
         let prompt = self.build_prompt(request);
 
+        // Constrói o comando com argumentos do config
+        let mut cmd = Command::new(&self.command_name);
+        for arg in &self.args {
+            cmd.arg(arg);
+        }
+        cmd.arg(&prompt);
+
         // Executa a CLI com timeout
-        let result = tokio::time::timeout(
-            self.timeout,
-            Command::new(self.command()).arg("-p").arg(&prompt).output(),
-        )
-        .await;
+        let result = tokio::time::timeout(self.timeout, cmd.output()).await;
 
         match result {
             Ok(Ok(output)) => {

@@ -166,16 +166,27 @@ pub struct Finding {
     pub severity: Severity,
 
     /// Categoria do issue.
+    #[serde(default)]
     pub category: String,
 
     /// Descrição do issue.
     pub issue: String,
 
     /// Linha(s) afetada(s).
+    #[serde(default)]
     pub lines: Option<Vec<u32>>,
 
     /// Sugestão de correção.
+    #[serde(default)]
     pub suggestion: Option<String>,
+
+    /// Fonte do finding (executores que reportaram).
+    #[serde(default)]
+    pub source: String,
+
+    /// Força do consenso (forte, moderado, fraco).
+    #[serde(default)]
+    pub consensus_strength: String,
 }
 
 impl Finding {
@@ -187,6 +198,8 @@ impl Finding {
             issue: issue.into(),
             lines: None,
             suggestion: None,
+            source: String::new(),
+            consensus_strength: String::new(),
         }
     }
 
@@ -199,6 +212,18 @@ impl Finding {
     /// Adiciona sugestão.
     pub fn with_suggestion(mut self, suggestion: impl Into<String>) -> Self {
         self.suggestion = Some(suggestion.into());
+        self
+    }
+
+    /// Adiciona fonte.
+    pub fn with_source(mut self, source: impl Into<String>) -> Self {
+        self.source = source.into();
+        self
+    }
+
+    /// Adiciona força do consenso.
+    pub fn with_consensus_strength(mut self, strength: impl Into<String>) -> Self {
+        self.consensus_strength = strength.into();
         self
     }
 }

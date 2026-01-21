@@ -1199,25 +1199,32 @@ steps:
 - [x] Health checks
 - [x] Parsing robusto de JSON
 
-### Fase 3: Consenso + ReasoningBank (Semana 3)
-- [ ] Motor de consenso
-- [ ] ReasoningBank com SQLite
-- [ ] Ciclo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
-- [ ] Export/Import de patterns
+### Fase 3: Consenso + ReasoningBank (Semana 3) ✅ COMPLETA
+- [x] Motor de consenso (rules.rs, aggregator.rs, engine.rs)
+- [x] ReasoningBank com SQLite (bank.rs)
+- [x] Ciclo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
+- [x] Export/Import de patterns (export.rs)
+- [x] Pattern matching (patterns.rs)
+- [x] CLI comandos: evaluate, history, export, import
+- [x] 66 testes passando
 
-### Fase 4: MCP Server (Semana 4)
-- [ ] Protocolo MCP (stdio)
-- [ ] 6 ferramentas expostas
-- [ ] Cache LRU
-- [ ] Hooks básicos
+### Fase 4: MCP Server (Semana 4) ✅ COMPLETA
+- [x] Protocolo MCP (stdio) - JSON-RPC 2.0 com Content-Length headers
+- [x] 6 ferramentas expostas (review_plan/code/tests, confirm, final_check, status)
+- [x] Cache LRU com TTL para resultados de avaliação
+- [x] Hooks básicos (pre/post_evaluate, on_consensus, on_block)
+- [x] Sistema de confirmações integrado (confirm → final_check)
+- [x] 126 testes passando
 
-### Fase 5: Polish (Semana 5)
-- [ ] CLI interativo completo
-- [ ] Documentação (README, CLAUDE.md)
-- [ ] Testes de integração
-- [ ] GitHub Actions CI/CD
+### Fase 5: Polish (Semana 5) ✅ COMPLETA
+- [x] CLI interativo completo (dialoguer para config)
+- [x] Documentação (README.md, CLAUDE.md, CHANGELOG.md)
+- [x] Testes de integração (205 testes passando: 127 unitários + 78 integração)
+- [x] GitHub Actions CI/CD (ci.yml, release.yml)
+- [x] Correção de args dos executores (prompt posicional)
+- [x] CacheConfig conectado ao sistema
 
-### Fase 6: Release (Semana 6)
+### Fase 6: Release (Semana 6) 🔄 EM ANDAMENTO
 - [ ] Publicar no crates.io
 - [ ] GitHub Releases com binários
 - [ ] Homebrew formula

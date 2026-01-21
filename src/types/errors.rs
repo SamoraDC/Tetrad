@@ -8,6 +8,9 @@ pub type TetradResult<T> = Result<T, TetradError>;
 /// Erros possíveis no Tetrad.
 #[derive(Error, Debug)]
 pub enum TetradError {
+    #[cfg(feature = "sqlite")]
+    #[error("Erro no SQLite: {0}")]
+    Sqlite(#[from] rusqlite::Error),
     #[error("Erro de configuração: {0}")]
     Config(String),
 
@@ -46,6 +49,17 @@ pub enum TetradError {
 
     #[error("{0}")]
     Other(String),
+
+    #[cfg(feature = "cli")]
+    #[error("Erro de entrada interativa: {0}")]
+    Dialoguer(String),
+}
+
+#[cfg(feature = "cli")]
+impl From<dialoguer::Error> for TetradError {
+    fn from(e: dialoguer::Error) -> Self {
+        TetradError::Dialoguer(e.to_string())
+    }
 }
 
 impl TetradError {

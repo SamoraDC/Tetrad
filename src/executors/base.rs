@@ -111,26 +111,114 @@ pub struct ExecutorResponse {
 impl ExecutorResponse {
     /// Parseia uma resposta JSON de um executor.
     ///
-    /// Busca o primeiro objeto JSON válido na saída e o converte em ExecutorResponse.
+    /// Busca o primeiro objeto JSON válido e balanceado na saída.
+    /// Lida corretamente com múltiplos blocos JSON, code fences e texto com chaves.
     pub fn parse_from_output(output: &str, executor_name: &str) -> TetradResult<Self> {
-        let json_start = output.find('{');
-        let json_end = output.rfind('}');
+        // Remove code fences markdown se presentes
+        let cleaned = Self::strip_code_fences(output);
 
-        match (json_start, json_end) {
-            (Some(start), Some(end)) if start < end => {
-                let json_str = &output[start..=end];
-                serde_json::from_str(json_str).map_err(|e| {
-                    TetradError::ExecutorFailed(
-                        executor_name.to_string(),
-                        format!("Falha ao parsear JSON: {}", e),
-                    )
-                })
-            }
-            _ => Err(TetradError::ExecutorFailed(
-                executor_name.to_string(),
-                "Resposta não contém JSON válido".to_string(),
-            )),
+        // Tenta encontrar um objeto JSON válido e balanceado
+        if let Some(json_str) = Self::find_balanced_json(&cleaned) {
+            return serde_json::from_str(json_str).map_err(|e| {
+                TetradError::ExecutorFailed(
+                    executor_name.to_string(),
+                    format!("Falha ao parsear JSON: {}", e),
+                )
+            });
         }
+
+        Err(TetradError::ExecutorFailed(
+            executor_name.to_string(),
+            "Resposta não contém JSON válido".to_string(),
+        ))
+    }
+
+    /// Remove code fences markdown (```json ... ```) do texto.
+    fn strip_code_fences(input: &str) -> String {
+        let mut result = input.to_string();
+
+        // Remove ```json ou ``` no início de blocos
+        while let Some(start) = result.find("```") {
+            let end_of_fence = result[start + 3..]
+                .find('\n')
+                .map(|i| start + 3 + i + 1)
+                .unwrap_or(start + 3);
+
+            // Encontra o fechamento ```
+            if let Some(close) = result[end_of_fence..].find("```") {
+                let close_pos = end_of_fence + close;
+                // Extrai o conteúdo entre as fences
+                let content = &result[end_of_fence..close_pos];
+                result = format!(
+                    "{}{}{}",
+                    &result[..start],
+                    content,
+                    &result[close_pos + 3..]
+                );
+            } else {
+                break;
+            }
+        }
+
+        result
+    }
+
+    /// Encontra o primeiro objeto JSON balanceado no texto.
+    fn find_balanced_json(input: &str) -> Option<&str> {
+        let bytes = input.as_bytes();
+        let mut i = 0;
+
+        while i < bytes.len() {
+            if bytes[i] == b'{' {
+                // Tenta extrair um objeto JSON balanceado a partir desta posição
+                if let Some(end) = Self::find_closing_brace(input, i) {
+                    let candidate = &input[i..=end];
+                    // Verifica se é JSON válido com os campos esperados
+                    if Self::is_valid_executor_json(candidate) {
+                        return Some(candidate);
+                    }
+                }
+            }
+            i += 1;
+        }
+
+        None
+    }
+
+    /// Encontra a posição da chave de fechamento correspondente.
+    fn find_closing_brace(input: &str, start: usize) -> Option<usize> {
+        let bytes = input.as_bytes();
+        let mut depth = 0;
+        let mut in_string = false;
+        let mut escape_next = false;
+
+        for (i, &byte) in bytes.iter().enumerate().skip(start) {
+            if escape_next {
+                escape_next = false;
+                continue;
+            }
+
+            match byte {
+                b'\\' if in_string => escape_next = true,
+                b'"' => in_string = !in_string,
+                b'{' if !in_string => depth += 1,
+                b'}' if !in_string => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Some(i);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        None
+    }
+
+    /// Verifica se o JSON contém os campos esperados de uma resposta de executor.
+    fn is_valid_executor_json(json_str: &str) -> bool {
+        // Verifica se contém os campos obrigatórios "vote" e "score"
+        json_str.contains("\"vote\"") && json_str.contains("\"score\"")
     }
 
     /// Converte a resposta em um ModelVote.
@@ -214,5 +302,65 @@ mod tests {
         assert_eq!(vote.executor, "test");
         assert_eq!(vote.score, 85);
         assert_eq!(vote.suggestions.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_json_with_code_fence() {
+        let output = r#"
+Here is my analysis:
+```json
+{"vote": "PASS", "score": 90, "reasoning": "Good", "issues": [], "suggestions": []}
+```
+That's my response.
+"#;
+        let response = ExecutorResponse::parse_from_output(output, "Test");
+        assert!(response.is_ok());
+        let response = response.unwrap();
+        assert_eq!(response.vote, "PASS");
+        assert_eq!(response.score, 90);
+    }
+
+    #[test]
+    fn test_parse_json_with_multiple_braces() {
+        let output = r#"
+The function `fn foo() { bar() }` looks good.
+{"vote": "WARN", "score": 70, "reasoning": "Minor issues", "issues": ["issue1"], "suggestions": []}
+End of response.
+"#;
+        let response = ExecutorResponse::parse_from_output(output, "Test");
+        assert!(response.is_ok());
+        let response = response.unwrap();
+        assert_eq!(response.vote, "WARN");
+        assert_eq!(response.score, 70);
+    }
+
+    #[test]
+    fn test_parse_json_with_nested_json() {
+        let output = r#"
+Some text with nested object: {"other": "data"}
+{"vote": "FAIL", "score": 30, "reasoning": "Bad code", "issues": ["bug"], "suggestions": ["fix"]}
+"#;
+        let response = ExecutorResponse::parse_from_output(output, "Test");
+        assert!(response.is_ok());
+        let response = response.unwrap();
+        assert_eq!(response.vote, "FAIL");
+        assert_eq!(response.score, 30);
+    }
+
+    #[test]
+    fn test_parse_json_direct() {
+        let output = r#"{"vote": "PASS", "score": 100, "reasoning": "Perfect", "issues": [], "suggestions": []}"#;
+        let response = ExecutorResponse::parse_from_output(output, "Test");
+        assert!(response.is_ok());
+        let response = response.unwrap();
+        assert_eq!(response.vote, "PASS");
+        assert_eq!(response.score, 100);
+    }
+
+    #[test]
+    fn test_parse_json_no_valid_json() {
+        let output = "No JSON here, just some text with { random braces }";
+        let response = ExecutorResponse::parse_from_output(output, "Test");
+        assert!(response.is_err());
     }
 }

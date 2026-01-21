@@ -23,6 +23,10 @@ pub struct Config {
     /// Configurações do ReasoningBank.
     #[serde(default)]
     pub reasoning: ReasoningConfig,
+
+    /// Configurações do cache.
+    #[serde(default)]
+    pub cache: CacheConfig,
 }
 
 /// Configurações gerais.
@@ -82,9 +86,12 @@ pub struct ExecutorsConfig {
 impl Default for ExecutorsConfig {
     fn default() -> Self {
         Self {
-            codex: ExecutorConfig::new("codex", &["-p"]),
-            gemini: ExecutorConfig::new("gemini", &["--output-format", "json"]),
-            qwen: ExecutorConfig::new("qwen", &["-p"]),
+            // Codex: prompt é argumento posicional
+            codex: ExecutorConfig::new("codex", &[]),
+            // Gemini: -o json para formato de saída, prompt é posicional
+            gemini: ExecutorConfig::new("gemini", &["-o", "json"]),
+            // Qwen: prompt é argumento posicional
+            qwen: ExecutorConfig::new("qwen", &[]),
         }
     }
 }
@@ -242,6 +249,40 @@ fn default_consolidation_interval() -> usize {
     100
 }
 
+/// Configurações do cache LRU.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheConfig {
+    /// Habilitado.
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+
+    /// Capacidade máxima do cache (número de entradas).
+    #[serde(default = "default_cache_capacity")]
+    pub capacity: usize,
+
+    /// Tempo de vida das entradas em segundos.
+    #[serde(default = "default_cache_ttl")]
+    pub ttl_secs: u64,
+}
+
+impl Default for CacheConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            capacity: default_cache_capacity(),
+            ttl_secs: default_cache_ttl(),
+        }
+    }
+}
+
+fn default_cache_capacity() -> usize {
+    1000
+}
+
+fn default_cache_ttl() -> u64 {
+    300 // 5 minutos
+}
+
 impl Config {
     /// Carrega configuração de um arquivo TOML.
     pub fn load<P: AsRef<Path>>(path: P) -> TetradResult<Self> {
@@ -264,6 +305,7 @@ impl Config {
             executors: ExecutorsConfig::default(),
             consensus: ConsensusConfig::default(),
             reasoning: ReasoningConfig::default(),
+            cache: CacheConfig::default(),
         }
     }
 
