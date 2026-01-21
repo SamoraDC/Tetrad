@@ -36,7 +36,7 @@ impl CachedResult {
             .signed_duration_since(self.cached_at)
             .to_std()
             .unwrap_or(Duration::MAX);
-        elapsed > ttl
+        elapsed >= ttl
     }
 }
 
