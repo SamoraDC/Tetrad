@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Tetrad is a high-performance MCP (Model Context Protocol) server written in Rust that orchestrates three CLI code evaluation tools (Codex, Gemini CLI, Qwen) to validate code produced by Claude Code. It implements a quadruple consensus protocol where no code is accepted without unanimous approval from four intelligences: the three external evaluators + Claude Code itself.
 
-**Current Status**: Phases 1-4 complete. The project has a functional MCP server, consensus engine, ReasoningBank with SQLite, cache LRU, and hook system. Phase 5 (Polish) is in progress.
+**Current Status**: Phases 1-5 complete. The project has a functional MCP server, consensus engine, ReasoningBank with SQLite, LRU cache, and hook system. Phase 6 (Release) is in progress - published to crates.io.
 
 ## Build and Development Commands
 
@@ -123,7 +123,7 @@ Unit tests are co-located with source files using `#[cfg(test)]` modules.
 
 Run tests:
 ```bash
-cargo test              # All tests (126 tests passing)
+cargo test              # All tests (219 tests passing: 141 unit + 78 integration)
 cargo test consensus    # Tests containing "consensus"
 cargo test reasoning    # Tests containing "reasoning"
 cargo test mcp          # Tests containing "mcp"
@@ -163,19 +163,19 @@ timeout_secs = 60
 [executors.codex]
 enabled = true
 command = "codex"
-args = ["-p"]
+args = ["exec", "--json"]
 timeout_secs = 30
 
 [executors.gemini]
 enabled = true
 command = "gemini"
-args = ["--output-format", "json"]
+args = ["-o", "json"]
 timeout_secs = 30
 
 [executors.qwen]
 enabled = true
 command = "qwen"
-args = ["-p"]
+args = []
 timeout_secs = 30
 
 [consensus]
@@ -251,8 +251,11 @@ tetrad/
 
 ## Development Status
 
-- **Phase 1-2**: Foundation + Executors (Complete)
-- **Phase 3**: Consensus + ReasoningBank (Complete)
-- **Phase 4**: MCP Server + Cache + Hooks (Complete)
-- **Phase 5**: Polish - CLI interativo, docs, tests, CI/CD (Complete)
-- **Phase 6**: Release - crates.io, Homebrew, GitHub Releases (In Progress)
+- **Phase 1-2**: Foundation + Executors ✅
+- **Phase 3**: Consensus + ReasoningBank ✅
+- **Phase 4**: MCP Server + Cache + Hooks ✅
+- **Phase 5**: Polish - Interactive CLI, docs, tests, CI/CD ✅
+- **Phase 6**: Release - crates.io, Homebrew, GitHub Releases 🔄
+  - [x] Published to crates.io (v0.1.1)
+  - [ ] GitHub Releases with binaries
+  - [ ] Homebrew formula

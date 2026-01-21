@@ -1,110 +1,114 @@
-# Tetrad: MCP de Consenso Quádruplo em Rust
+# Tetrad: Quadruple Consensus MCP Server in Rust
 
-> **Versão 2.0** - Revisada com aprendizados do Claude-Flow
+> **Version 2.0** - Revised with learnings from Claude-Flow
 
-## Sumário Executivo
+## Executive Summary
 
-**Tetrad** é um servidor MCP de alta performance escrito em Rust que orquestra três ferramentas CLI de código (Codex, Gemini CLI, Qwen Code) para avaliar e validar todo trabalho produzido pelo Claude Code. O sistema implementa um protocolo de consenso quádruplo onde nenhum código ou plano é aceito sem a aprovação unânime de quatro inteligências: os três avaliadores externos + o próprio Claude Code.
+**Tetrad** is a high-performance MCP server written in Rust that orchestrates three CLI code tools (Codex, Gemini CLI, Qwen Code) to evaluate and validate all work produced by Claude Code. The system implements a quadruple consensus protocol where no code or plan is accepted without unanimous approval from four intelligences: the three external evaluators + Claude Code itself.
 
-### Novidades v2.0 (Inspiradas no Claude-Flow)
+### What's New in v2.0 (Inspired by Claude-Flow)
 
-| Feature | Descrição |
-|---------|-----------|
-| **ReasoningBank** | Sistema de aprendizado contínuo com ciclo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE |
-| **CLI Interativa** | Comandos `tetrad init`, `tetrad status`, `tetrad config` |
-| **Distribuição crates.io** | `cargo install tetrad` para instalação global |
-| **Sistema de Plugins** | Extensibilidade para novos avaliadores |
-| **CLAUDE.md** | Documentação para o Claude Code usar automaticamente |
-| **Hooks** | Callbacks para pre/post avaliação |
-| **Persistência** | SQLite para histórico cross-session |
+| Feature                  | Description                                                                      |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| **ReasoningBank**        | Continuous learning system with RETRIEVE→JUDGE→DISTILL→CONSOLIDATE cycle        |
+| **Interactive CLI**      | Commands `tetrad init`, `tetrad status`, `tetrad config`                         |
+| **crates.io Distribution** | `cargo install tetrad` for global installation                                 |
+| **Plugin System**        | Extensibility for new evaluators                                                 |
+| **CLAUDE.md**            | Documentation for Claude Code to use automatically                               |
+| **Hooks**                | Callbacks for pre/post evaluation                                                |
+| **Persistence**          | SQLite for cross-session history                                                 |
 
-### Por que Rust?
+### Why Rust?
 
-| Aspecto | Benefício |
-|---------|-----------|
-| **Performance** | Execução paralela nativa com zero overhead de runtime |
-| **Confiabilidade** | Sistema de tipos que previne bugs em tempo de compilação |
-| **Concorrência** | Tokio async runtime para chamadas CLI simultâneas |
-| **Binário único** | Deploy simples sem dependências de runtime |
-| **Baixa latência** | Ideal para MCP que precisa responder rapidamente |
-| **crates.io** | Distribuição fácil como o npm para Node.js |
+| Aspect                | Benefit                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| **Performance**       | Native parallel execution with zero runtime overhead       |
+| **Reliability**       | Type system that prevents bugs at compile time             |
+| **Concurrency**       | Tokio async runtime for simultaneous CLI calls             |
+| **Single Binary**     | Simple deployment without runtime dependencies             |
+| **Low Latency**       | Ideal for MCP that needs to respond quickly                |
+| **crates.io**         | Easy distribution like npm for Node.js                     |
 
 ---
 
-## 1. Instalação e Uso (Como Claude-Flow)
+## 1. Installation and Usage (Like Claude-Flow)
 
-### 1.1 Instalação Rápida
+### 1.1 Quick Installation
 
 ```bash
-# Via cargo (recomendado)
+# Via cargo (recommended)
 cargo install tetrad
 
 # Via Homebrew (macOS/Linux)
 brew install tetrad
 
-# Via binário direto (releases do GitHub)
-curl -fsSL https://github.com/seu-usuario/tetrad/releases/latest/download/install.sh | sh
+# Via direct binary (GitHub releases)
+curl -fsSL https://github.com/SamoraDC/tetrad/releases/latest/download/install.sh | sh
 ```
 
-### 1.2 Inicialização
+### 1.2 Initialization
 
 ```bash
-# Inicializa configuração no projeto atual
+# Initialize configuration in current project
 tetrad init
 
-# Verifica status das CLIs
+# Check CLI status
 tetrad status
 
-# Configura interativamente
+# Configure interactively
 tetrad config
 ```
 
-### 1.3 Integração com Claude Code
+### 1.3 Integration with Claude Code
 
 ```bash
-# Adiciona como MCP server (similar ao Claude-Flow)
+# Add as MCP server (available in all projects)
+claude mcp add --scope user tetrad -- tetrad serve
+
+# Or for current project only
 claude mcp add tetrad -- tetrad serve
 
-# Ou manualmente em ~/.claude/settings.json
+# Verify it's configured
+claude mcp list
 ```
 
-### 1.4 Comandos CLI Disponíveis
+### 1.4 Available CLI Commands
 
 ```
-tetrad - CLI de Consenso Quádruplo para Claude Code
+tetrad - Quadruple Consensus CLI for Claude Code
 
 USAGE:
     tetrad <COMMAND>
 
 COMMANDS:
-    init        Inicializa configuração no diretório atual
-    serve       Inicia o servidor MCP (usado pelo Claude Code)
-    status      Mostra status das CLIs (codex, gemini, qwen)
-    config      Configura opções interativamente
-    evaluate    Avalia código manualmente (sem MCP)
-    history     Mostra histórico de avaliações
-    export      Exporta ReasoningBank para arquivo
-    import      Importa patterns de outro ReasoningBank
-    doctor      Diagnostica problemas de configuração
-    version     Mostra versão
+    init        Initialize configuration in current directory
+    serve       Start MCP server (used by Claude Code)
+    status      Show CLI status (codex, gemini, qwen)
+    config      Configure options interactively
+    evaluate    Evaluate code manually (without MCP)
+    history     Show evaluation history
+    export      Export ReasoningBank to file
+    import      Import patterns from another ReasoningBank
+    doctor      Diagnose configuration issues
+    version     Show version
 
 OPTIONS:
-    -c, --config <FILE>    Arquivo de configuração (default: tetrad.toml)
-    -v, --verbose          Modo verbose
-    -q, --quiet            Modo silencioso
-    -h, --help             Mostra ajuda
+    -c, --config <FILE>    Configuration file (default: tetrad.toml)
+    -v, --verbose          Verbose mode
+    -q, --quiet            Quiet mode
+    -h, --help             Show help
 ```
 
 ---
 
-## 2. Arquitetura do Sistema
+## 2. System Architecture
 
-### 2.1 Visão Geral (Atualizada)
+### 2.1 Overview (Updated)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              CLAUDE CODE                                     │
-│                      (Gerador de Código + Decisor Final)                     │
+│                      (Code Generator + Final Decision Maker)                 │
 └───────────────────────────────┬─────────────────────────────────────────────┘
                                 │ MCP Protocol (stdio)
                                 ▼
@@ -112,11 +116,11 @@ OPTIONS:
 │                       MCP SERVER: TETRAD (Rust)                              │
 │                                                                              │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │                           ORQUESTRADOR                                  │ │
-│  │  • Recebe requisições MCP do Claude Code                               │ │
-│  │  • Gerencia pipeline de gates (Plan → Impl → Tests)                    │ │
-│  │  • Coordena loop de refinamento até consenso                           │ │
-│  │  • Consulta ReasoningBank para patterns conhecidos                     │ │
+│  │                           ORCHESTRATOR                                  │ │
+│  │  • Receives MCP requests from Claude Code                              │ │
+│  │  • Manages gate pipeline (Plan → Impl → Tests)                         │ │
+│  │  • Coordinates refinement loop until consensus                         │ │
+│  │  • Queries ReasoningBank for known patterns                            │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 │                                │                                             │
 │          ┌─────────────────────┼─────────────────────┐                      │
@@ -126,18 +130,17 @@ OPTIONS:
 │  │   Executor   │     │   Executor   │     │   Executor   │                │
 │  │              │     │              │     │              │                │
 │  │ CLI: codex   │     │ CLI: gemini  │     │ CLI: qwen    │                │
-│  │ Flag: -p     │     │ --output-    │     │ Flag: -p     │                │
-│  │              │     │ format json  │     │              │                │
+│  │ exec --json  │     │ -o json      │     │              │                │
 │  └──────────────┘     └──────────────┘     └──────────────┘                │
 │          │                     │                     │                      │
 │          └─────────────────────┼─────────────────────┘                      │
 │                                ▼                                             │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │                       MOTOR DE CONSENSO                                 │ │
-│  │  • Coleta votos (PASS/WARN/FAIL) de cada CLI                           │ │
-│  │  • Aplica regras: Regra de Ouro, Consenso Fraco/Forte                  │ │
-│  │  • Calcula score agregado e confidence                                 │ │
-│  │  • Gera feedback consolidado e acionável                               │ │
+│  │                       CONSENSUS ENGINE                                  │ │
+│  │  • Collects votes (PASS/WARN/FAIL) from each CLI                       │ │
+│  │  • Applies rules: Golden Rule, Weak/Strong Consensus                   │ │
+│  │  • Calculates aggregate score and confidence                           │ │
+│  │  • Generates consolidated, actionable feedback                         │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 │                                │                                             │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
@@ -146,40 +149,40 @@ OPTIONS:
 │  │  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────┐        │ │
 │  │  │ RETRIEVE │──▶│  JUDGE   │──▶│ DISTILL  │──▶│ CONSOLIDATE  │        │ │
 │  │  │          │   │          │   │          │   │              │        │ │
-│  │  │ Busca    │   │ Avalia   │   │ Extrai   │   │ Previne      │        │ │
-│  │  │ patterns │   │ sucesso/ │   │ learnings│   │ esquecimento │        │ │
-│  │  │ similares│   │ falha    │   │          │   │              │        │ │
+│  │  │ Search   │   │ Evaluate │   │ Extract  │   │ Prevent      │        │ │
+│  │  │ similar  │   │ success/ │   │ learnings│   │ forgetting   │        │ │
+│  │  │ patterns │   │ failure  │   │          │   │              │        │ │
 │  │  └──────────┘   └──────────┘   └──────────┘   └──────────────┘        │ │
 │  │                                                                         │ │
-│  │  • Persistência cross-session (SQLite)                                 │ │
-│  │  • Exportável/Importável para compartilhar patterns                    │ │
-│  │  • Previne repetição de erros conhecidos                               │ │
+│  │  • Cross-session persistence (SQLite)                                  │ │
+│  │  • Exportable/Importable for sharing patterns                          │ │
+│  │  • Prevents repetition of known errors                                 │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 │                                                                              │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │                          SISTEMA DE HOOKS                               │ │
-│  │  • pre_evaluate: Antes de enviar para CLIs                             │ │
-│  │  • post_evaluate: Após receber votos                                   │ │
-│  │  • on_consensus: Quando consenso é alcançado                           │ │
-│  │  • on_block: Quando avaliação é bloqueada                              │ │
+│  │                          HOOK SYSTEM                                    │ │
+│  │  • pre_evaluate: Before sending to CLIs                                │ │
+│  │  • post_evaluate: After receiving votes                                │ │
+│  │  • on_consensus: When consensus is reached                             │ │
+│  │  • on_block: When evaluation is blocked                                │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 │                                                                              │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │                         SISTEMA DE PLUGINS                              │ │
-│  │  • Novos executores (ex: Claude local, Llama, etc.)                    │ │
-│  │  • Novos exportadores (JSON, CSV, Markdown)                            │ │
-│  │  • Integrações (GitHub, GitLab, Jira)                                  │ │
+│  │                         PLUGIN SYSTEM                                   │ │
+│  │  • New executors (e.g.: local Claude, Llama, etc.)                     │ │
+│  │  • New exporters (JSON, CSV, Markdown)                                 │ │
+│  │  • Integrations (GitHub, GitLab, Jira)                                 │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 Fluxo de Dados com ReasoningBank
+### 2.2 Data Flow with ReasoningBank
 
 ```
 ┌──────────┐    ┌──────────┐    ┌───────────┐    ┌──────────┐    ┌──────────┐
-│  Claude  │    │ Reasoning│    │    3      │    │ Consenso │    │  Claude  │
+│  Claude  │    │ Reasoning│    │    3      │    │ Consensus│    │  Claude  │
 │   Code   │───▶│   Bank   │───▶│   CLIs    │───▶│  Engine  │───▶│   Code   │
-│  (input) │    │(RETRIEVE)│    │(parallel) │    │ (agreg)  │    │ (output) │
+│  (input) │    │(RETRIEVE)│    │(parallel) │    │ (aggr)   │    │ (output) │
 └──────────┘    └──────────┘    └───────────┘    └──────────┘    └──────────┘
      │                                                 │
      │                                                 ▼
@@ -190,17 +193,17 @@ OPTIONS:
      │                                        │ CONSOLIDATE) │
      │                                        └──────────────┘
      │                                                 │
-     │              LOOP DE REFINAMENTO                │
+     │              REFINEMENT LOOP                    │
      └─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 3. ReasoningBank: Sistema de Aprendizado Contínuo
+## 3. ReasoningBank: Continuous Learning System
 
-Inspirado no Claude-Flow, o ReasoningBank implementa um ciclo de aprendizado que melhora as avaliações ao longo do tempo.
+Inspired by Claude-Flow, the ReasoningBank implements a learning cycle that improves evaluations over time.
 
-### 3.1 O Ciclo RETRIEVE → JUDGE → DISTILL → CONSOLIDATE
+### 3.1 The RETRIEVE → JUDGE → DISTILL → CONSOLIDATE Cycle
 
 ```rust
 // src/reasoning/bank.rs
@@ -209,7 +212,7 @@ use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
-/// ReasoningBank - Sistema de aprendizado contínuo inspirado no Claude-Flow
+/// ReasoningBank - Continuous learning system inspired by Claude-Flow
 pub struct ReasoningBank {
     conn: Connection,
     config: ReasoningConfig,
@@ -219,27 +222,27 @@ pub struct ReasoningBank {
 pub struct Pattern {
     pub id: i64,
     pub pattern_type: PatternType,
-    pub code_signature: String,      // Hash ou fingerprint do código
+    pub code_signature: String,      // Hash or fingerprint of the code
     pub language: String,
     pub issue_category: String,      // "security", "logic", "performance", etc.
     pub description: String,
     pub solution: Option<String>,
-    pub success_count: i32,          // Quantas vezes o pattern levou a sucesso
-    pub failure_count: i32,          // Quantas vezes o pattern levou a falha
-    pub confidence: f64,             // Calculado: success / (success + failure)
+    pub success_count: i32,          // How many times the pattern led to success
+    pub failure_count: i32,          // How many times the pattern led to failure
+    pub confidence: f64,             // Calculated: success / (success + failure)
     pub last_seen: DateTime<Utc>,
     pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PatternType {
-    AntiPattern,    // Código que sempre falha
-    GoodPattern,    // Código que sempre passa
-    Ambiguous,      // Resultados mistos
+    AntiPattern,    // Code that always fails
+    GoodPattern,    // Code that always passes
+    Ambiguous,      // Mixed results
 }
 
 impl ReasoningBank {
-    /// Cria ou abre o banco de patterns
+    /// Creates or opens the pattern bank
     pub fn new(db_path: &str) -> anyhow::Result<Self> {
         let conn = Connection::open(db_path)?;
 
@@ -284,17 +287,17 @@ impl ReasoningBank {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // FASE 1: RETRIEVE - Busca patterns similares
+    // PHASE 1: RETRIEVE - Search for similar patterns
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// Busca patterns conhecidos que podem afetar a avaliação
+    /// Searches for known patterns that may affect the evaluation
     pub fn retrieve(&self, code: &str, language: &str) -> Vec<PatternMatch> {
         let signature = self.compute_signature(code);
         let keywords = self.extract_keywords(code);
 
         let mut matches = Vec::new();
 
-        // Busca por assinatura exata
+        // Search by exact signature
         if let Ok(exact) = self.find_by_signature(&signature) {
             matches.extend(exact.into_iter().map(|p| PatternMatch {
                 pattern: p,
@@ -303,34 +306,34 @@ impl ReasoningBank {
             }));
         }
 
-        // Busca por keywords (padrões conhecidos de problemas)
+        // Search by keywords (known problem patterns)
         for keyword in &keywords {
             if let Ok(keyword_matches) = self.find_by_keyword(keyword, language) {
                 matches.extend(keyword_matches.into_iter().map(|p| PatternMatch {
-                    relevance: 0.7, // Menos confiável que match exato
+                    relevance: 0.7, // Less reliable than exact match
                     pattern: p,
                     match_type: MatchType::Keyword,
                 }));
             }
         }
 
-        // Ordena por relevância e confidence
+        // Sort by relevance and confidence
         matches.sort_by(|a, b| {
             let score_a = a.relevance * a.pattern.confidence;
             let score_b = b.relevance * b.pattern.confidence;
             score_b.partial_cmp(&score_a).unwrap_or(std::cmp::Ordering::Equal)
         });
 
-        // Retorna top N matches
+        // Return top N matches
         matches.truncate(self.config.max_patterns_per_query);
         matches
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // FASE 2: JUDGE - Avalia sucesso/falha da avaliação
+    // PHASE 2: JUDGE - Evaluate success/failure of the evaluation
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// Julga o resultado de uma avaliação e atualiza patterns
+    /// Judges the result of an evaluation and updates patterns
     pub fn judge(
         &mut self,
         request_id: &str,
@@ -342,7 +345,7 @@ impl ReasoningBank {
         let signature = self.compute_signature(code);
         let was_successful = result.consensus_achieved && loops_to_consensus <= 2;
 
-        // Registra trajetória
+        // Record trajectory
         let trajectory = Trajectory {
             request_id: request_id.to_string(),
             code_hash: signature.clone(),
@@ -353,7 +356,7 @@ impl ReasoningBank {
             timestamp: Utc::now(),
         };
 
-        // Para cada issue encontrado, atualiza ou cria pattern
+        // For each issue found, update or create pattern
         for finding in &result.findings {
             self.update_or_create_pattern(
                 &signature,
@@ -365,7 +368,7 @@ impl ReasoningBank {
             )?;
         }
 
-        // Se não houve issues e foi sucesso, registra como GoodPattern
+        // If there were no issues and it was a success, register as GoodPattern
         if result.findings.is_empty() && was_successful {
             self.register_good_pattern(&signature, language)?;
         }
@@ -375,29 +378,29 @@ impl ReasoningBank {
         Ok(JudgmentResult {
             was_successful,
             patterns_updated: result.findings.len(),
-            new_patterns_created: 0, // Será atualizado pelo método
+            new_patterns_created: 0, // Will be updated by the method
         })
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // FASE 3: DISTILL - Extrai learnings dos patterns
+    // PHASE 3: DISTILL - Extract learnings from patterns
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// Destila conhecimento dos patterns para gerar insights
+    /// Distills knowledge from patterns to generate insights
     pub fn distill(&self) -> DistilledKnowledge {
-        // Top anti-patterns (mais falhas)
+        // Top anti-patterns (most failures)
         let top_antipatterns = self.get_top_patterns(PatternType::AntiPattern, 10);
 
-        // Top good patterns (mais sucessos)
+        // Top good patterns (most successes)
         let top_good_patterns = self.get_top_patterns(PatternType::GoodPattern, 10);
 
-        // Categorias mais problemáticas
+        // Most problematic categories
         let problematic_categories = self.get_problematic_categories();
 
-        // Linguagens com mais issues
+        // Languages with most issues
         let language_stats = self.get_language_stats();
 
-        // Tempo médio para consenso
+        // Average time to consensus
         let avg_loops = self.get_average_loops_to_consensus();
 
         DistilledKnowledge {
@@ -412,25 +415,25 @@ impl ReasoningBank {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // FASE 4: CONSOLIDATE - Previne esquecimento de patterns importantes
+    // PHASE 4: CONSOLIDATE - Prevent forgetting important patterns
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// Consolida conhecimento, prevenindo esquecimento de patterns importantes
+    /// Consolidates knowledge, preventing forgetting of important patterns
     pub fn consolidate(&mut self) -> anyhow::Result<ConsolidationResult> {
         let mut merged = 0;
         let mut pruned = 0;
         let mut reinforced = 0;
 
-        // Merge patterns similares
+        // Merge similar patterns
         merged += self.merge_similar_patterns()?;
 
-        // Remove patterns com baixa confiança e pouco uso
+        // Remove patterns with low confidence and little use
         pruned += self.prune_low_quality_patterns()?;
 
-        // Reforça patterns que consistentemente previnem erros
+        // Reinforce patterns that consistently prevent errors
         reinforced += self.reinforce_high_value_patterns()?;
 
-        // Atualiza confidence de todos os patterns
+        // Update confidence for all patterns
         self.recalculate_all_confidences()?;
 
         Ok(ConsolidationResult {
@@ -441,13 +444,13 @@ impl ReasoningBank {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Métodos auxiliares
+    // Auxiliary methods
     // ═══════════════════════════════════════════════════════════════════════
 
     fn compute_signature(&self, code: &str) -> String {
         use sha2::{Sha256, Digest};
 
-        // Normaliza código (remove whitespace extra, comentários)
+        // Normalize code (remove extra whitespace, comments)
         let normalized = self.normalize_code(code);
 
         let mut hasher = Sha256::new();
@@ -464,11 +467,11 @@ impl ReasoningBank {
     }
 
     fn extract_keywords(&self, code: &str) -> Vec<String> {
-        // Extrai keywords que indicam patterns conhecidos
+        // Extract keywords that indicate known patterns
         let mut keywords = Vec::new();
         let code_lower = code.to_lowercase();
 
-        // Keywords de segurança
+        // Security keywords
         if code_lower.contains("sql") || code_lower.contains("query") {
             keywords.push("sql".to_string());
         }
@@ -479,7 +482,7 @@ impl ReasoningBank {
             keywords.push("code_execution".to_string());
         }
 
-        // Keywords de lógica
+        // Logic keywords
         if code_lower.contains("for") || code_lower.contains("while") {
             keywords.push("loop".to_string());
         }
@@ -490,7 +493,7 @@ impl ReasoningBank {
         keywords
     }
 
-    /// Exporta ReasoningBank para compartilhar com outros
+    /// Exports ReasoningBank to share with others
     pub fn export(&self, path: &str) -> anyhow::Result<()> {
         let knowledge = self.distill();
         let patterns = self.get_all_patterns()?;
@@ -508,7 +511,7 @@ impl ReasoningBank {
         Ok(())
     }
 
-    /// Importa patterns de outro ReasoningBank
+    /// Imports patterns from another ReasoningBank
     pub fn import(&mut self, path: &str) -> anyhow::Result<ImportResult> {
         let json = std::fs::read_to_string(path)?;
         let export: ReasoningBankExport = serde_json::from_str(&json)?;
@@ -518,11 +521,11 @@ impl ReasoningBank {
 
         for pattern in export.patterns {
             if self.pattern_exists(&pattern.code_signature, &pattern.issue_category)? {
-                // Merge com pattern existente
+                // Merge with existing pattern
                 self.merge_imported_pattern(&pattern)?;
                 skipped += 1;
             } else {
-                // Importa novo pattern
+                // Import new pattern
                 self.insert_pattern(&pattern)?;
                 imported += 1;
             }
@@ -533,31 +536,31 @@ impl ReasoningBank {
 }
 ```
 
-### 3.2 Integração com Avaliações
+### 3.2 Integration with Evaluations
 
 ```rust
-// src/mcp/server.rs (atualizado)
+// src/mcp/server.rs (updated)
 
 impl TetradServer {
     pub async fn evaluate(&self, request: EvaluationRequest) -> Result<EvaluationResult, ServerError> {
         let start = std::time::Instant::now();
 
         // ═══════════════════════════════════════════════════════════════════
-        // FASE RETRIEVE: Busca patterns conhecidos
+        // RETRIEVE PHASE: Search for known patterns
         // ═══════════════════════════════════════════════════════════════════
         let known_patterns = {
             let bank = self.reasoning_bank.read().await;
             bank.retrieve(&request.code, &request.language)
         };
 
-        // Se há anti-patterns conhecidos, adiciona ao contexto
+        // If there are known anti-patterns, add to context
         let enriched_context = self.enrich_context_with_patterns(&request, &known_patterns);
 
-        // Executa hooks pre_evaluate
+        // Execute pre_evaluate hooks
         self.hooks.run_pre_evaluate(&request).await?;
 
         // ═══════════════════════════════════════════════════════════════════
-        // Avaliação paralela nos 3 modelos
+        // Parallel evaluation in 3 models
         // ═══════════════════════════════════════════════════════════════════
         let (codex_result, gemini_result, qwen_result) = tokio::join!(
             self.execute_with_fallback(&*self.codex, &request, &enriched_context),
@@ -565,22 +568,22 @@ impl TetradServer {
             self.execute_with_fallback(&*self.qwen, &request, &enriched_context)
         );
 
-        // Coleta votos
+        // Collect votes
         let votes = self.collect_votes(codex_result, gemini_result, qwen_result)?;
 
-        // Calcula consenso
+        // Calculate consensus
         let result = self.consensus.aggregate(&votes, &request);
 
-        // Executa hooks post_evaluate
+        // Execute post_evaluate hooks
         self.hooks.run_post_evaluate(&request, &result).await?;
 
         // ═══════════════════════════════════════════════════════════════════
-        // FASES JUDGE + DISTILL + CONSOLIDATE
+        // JUDGE + DISTILL + CONSOLIDATE PHASES
         // ═══════════════════════════════════════════════════════════════════
         {
             let mut bank = self.reasoning_bank.write().await;
 
-            // JUDGE: Registra resultado
+            // JUDGE: Record result
             bank.judge(
                 &request.request_id,
                 &request.code,
@@ -589,20 +592,20 @@ impl TetradServer {
                 self.current_loop_count,
             )?;
 
-            // CONSOLIDATE: Periodicamente (a cada N avaliações)
+            // CONSOLIDATE: Periodically (every N evaluations)
             if self.evaluation_count % self.config.consolidation_interval == 0 {
                 bank.consolidate()?;
             }
         }
 
-        // Hooks de consenso/bloqueio
+        // Consensus/block hooks
         if result.consensus_achieved {
             self.hooks.run_on_consensus(&result).await?;
         } else if result.decision == Decision::Block {
             self.hooks.run_on_block(&result).await?;
         }
 
-        // Métricas
+        // Metrics
         let duration = start.elapsed();
         tracing::info!(
             request_id = %request.request_id,
@@ -624,8 +627,8 @@ impl TetradServer {
         let mut context = request.context.clone().unwrap_or_default();
 
         if !patterns.is_empty() {
-            context.push_str("\n\n## Patterns Conhecidos do ReasoningBank\n");
-            context.push_str("O código apresenta características similares a patterns conhecidos:\n\n");
+            context.push_str("\n\n## Known Patterns from ReasoningBank\n");
+            context.push_str("The code has characteristics similar to known patterns:\n\n");
 
             for (i, pm) in patterns.iter().take(5).enumerate() {
                 context.push_str(&format!(
@@ -637,11 +640,11 @@ impl TetradServer {
                 ));
 
                 if let Some(solution) = &pm.pattern.solution {
-                    context.push_str(&format!("   - Solução sugerida: {}\n", solution));
+                    context.push_str(&format!("   - Suggested solution: {}\n", solution));
                 }
             }
 
-            context.push_str("\nPor favor, verifique especialmente esses aspectos.\n");
+            context.push_str("\nPlease check these aspects especially.\n");
         }
 
         context
@@ -651,9 +654,9 @@ impl TetradServer {
 
 ---
 
-## 4. Sistema de Hooks
+## 4. Hook System
 
-Inspirado nos 17 hooks do Claude-Flow, o Tetrad oferece um sistema de callbacks para customização.
+Inspired by Claude-Flow's 17 hooks, Tetrad offers a callback system for customization.
 
 ```rust
 // src/hooks/mod.rs
@@ -700,10 +703,10 @@ impl HookSystem {
         Ok(())
     }
 
-    // ... outros métodos run_*
+    // ... other run_* methods
 }
 
-// Exemplo de hook customizado
+// Example of custom hook
 pub struct LoggingHook;
 
 #[async_trait]
@@ -733,16 +736,16 @@ impl Hook for LoggingHook {
 
 ---
 
-## 5. Sistema de Plugins
+## 5. Plugin System
 
-Para permitir extensibilidade como o Claude-Flow.
+To allow extensibility like Claude-Flow.
 
 ```rust
 // src/plugins/mod.rs
 
 use async_trait::async_trait;
 
-/// Trait para novos executores de avaliação
+/// Trait for new evaluation executors
 #[async_trait]
 pub trait ExecutorPlugin: Send + Sync {
     fn name(&self) -> &str;
@@ -751,13 +754,13 @@ pub trait ExecutorPlugin: Send + Sync {
     fn specialization(&self) -> &str; // "syntax", "architecture", "logic", etc.
 }
 
-/// Trait para exportadores de resultados
+/// Trait for result exporters
 pub trait ExporterPlugin: Send + Sync {
     fn name(&self) -> &str;
     fn export(&self, results: &[EvaluationResult], path: &str) -> anyhow::Result<()>;
 }
 
-/// Gerenciador de plugins
+/// Plugin manager
 pub struct PluginManager {
     executors: Vec<Box<dyn ExecutorPlugin>>,
     exporters: Vec<Box<dyn ExporterPlugin>>,
@@ -772,8 +775,8 @@ impl PluginManager {
     }
 
     pub fn load_from_directory(&mut self, path: &str) -> anyhow::Result<()> {
-        // Carrega plugins de arquivos .so/.dylib/.dll
-        // Ou de arquivos WASM para plugins sandboxed
+        // Load plugins from .so/.dylib/.dll files
+        // Or from WASM files for sandboxed plugins
         todo!("Plugin loading")
     }
 
@@ -790,74 +793,76 @@ impl PluginManager {
 
 ---
 
-## 6. CLAUDE.md - Documentação para Claude Code
+## 6. CLAUDE.md - Documentation for Claude Code
 
-Crie este arquivo no seu projeto para que o Claude Code saiba usar o Tetrad automaticamente.
+Create this file in your project so Claude Code knows to use Tetrad automatically.
 
 ```markdown
 # Tetrad Integration
 
-Este projeto usa **Tetrad** para validação de código por consenso quádruplo.
+This project uses **Tetrad** for quadruple consensus code validation.
 
-## Configuração
+## Configuration
 
-Tetrad está configurado como MCP server. As ferramentas disponíveis são:
+Tetrad is configured as an MCP server. The available tools are:
 
-### Ferramentas Obrigatórias
+### Mandatory Tools
 
-Você DEVE usar estas ferramentas antes de salvar código:
+You MUST use these tools before saving code:
 
-1. **`tetrad_review_plan`** - Use ANTES de começar a implementar
-2. **`tetrad_review_code`** - Use ANTES de salvar qualquer arquivo
-3. **`tetrad_review_tests`** - Use ANTES de finalizar testes
-4. **`tetrad_confirm`** - Use para confirmar que concorda com feedback
-5. **`tetrad_final_check`** - Use após todas as correções
+1. **`tetrad_review_plan`** - Use BEFORE starting to implement
+2. **`tetrad_review_code`** - Use BEFORE saving any file
+3. **`tetrad_review_tests`** - Use BEFORE finalizing tests
+4. **`tetrad_confirm`** - Use to confirm you agree with feedback
+5. **`tetrad_final_check`** - Use after all corrections
 
-### Fluxo de Trabalho
+### Workflow
 
 ```
-1. Gerar plano → tetrad_review_plan
-2. Se REVISE: ajustar plano → tetrad_confirm → retry
-3. Implementar → tetrad_review_code
-4. Se REVISE: corrigir → tetrad_confirm → retry
-5. Testes → tetrad_review_tests
+
+1. Generate plan → tetrad_review_plan
+2. If REVISE: adjust plan → tetrad_confirm → retry
+3. Implement → tetrad_review_code
+4. If REVISE: fix → tetrad_confirm → retry
+5. Tests → tetrad_review_tests
 6. tetrad_final_check → CERTIFIED
+
 ```
 
-### Regras
+### Rules
 
-- NUNCA salve código sem passar por tetrad_review_code
-- Se receber BLOCK, pare e corrija TODOS os issues críticos
-- Se 2+ modelos apontam o mesmo problema, é consenso forte - corrija
-- Qwen foca em bugs lógicos - preste atenção especial
-- Gemini foca em arquitetura - verifique impacto em outros módulos
-- Codex foca em sintaxe - siga as convenções
+- NEVER save code without going through tetrad_review_code
+- If you receive BLOCK, stop and fix ALL critical issues
+- If 2+ models point out the same problem, it's strong consensus - fix it
+- Qwen focuses on logic bugs - pay special attention
+- Gemini focuses on architecture - check impact on other modules
+- Codex focuses on syntax - follow conventions
 
 ### ReasoningBank
 
-O Tetrad aprende com avaliações passadas. Se você receber um aviso sobre
-"pattern conhecido", significa que código similar já causou problemas antes.
-Preste atenção especial a esses avisos.
+Tetrad learns from past evaluations. If you receive a warning about
+"known pattern", it means similar code has caused problems before.
+Pay special attention to these warnings.
 ```
 
 ---
 
-## 7. Estrutura do Projeto (Atualizada)
+## 7. Project Structure (Updated)
 
 ```
 tetrad/
-├── Cargo.toml                    # Manifesto do crate
+├── Cargo.toml                    # Crate manifest
 ├── Cargo.lock
-├── README.md                     # Documentação para usuários
-├── CLAUDE.md                     # Documentação para Claude Code
+├── README.md                     # User documentation
+├── CLAUDE.md                     # Documentation for Claude Code
 ├── LICENSE                       # MIT
 ├── src/
 │   ├── main.rs                   # Entry point (CLI)
-│   ├── lib.rs                    # Biblioteca exportável
+│   ├── lib.rs                    # Exportable library
 │   ├── cli/
 │   │   ├── mod.rs
-│   │   ├── commands.rs           # Comandos CLI (init, serve, status, etc.)
-│   │   └── interactive.rs        # Configuração interativa
+│   │   ├── commands.rs           # CLI commands (init, serve, status, etc.)
+│   │   └── interactive.rs        # Interactive configuration
 │   ├── mcp/
 │   │   ├── mod.rs
 │   │   ├── server.rs             # MCP server implementation
@@ -872,9 +877,9 @@ tetrad/
 │   │   └── qwen.rs               # Qwen CLI wrapper
 │   ├── consensus/
 │   │   ├── mod.rs
-│   │   ├── engine.rs             # Motor de consenso
-│   │   ├── rules.rs              # Regras de decisão
-│   │   └── aggregator.rs         # Agregação de votos
+│   │   ├── engine.rs             # Consensus engine
+│   │   ├── rules.rs              # Decision rules
+│   │   └── aggregator.rs         # Vote aggregation
 │   ├── reasoning/
 │   │   ├── mod.rs
 │   │   ├── bank.rs               # ReasoningBank (SQLite)
@@ -882,22 +887,22 @@ tetrad/
 │   │   └── export.rs             # Export/Import
 │   ├── hooks/
 │   │   ├── mod.rs
-│   │   └── builtin.rs            # Hooks padrão
+│   │   └── builtin.rs            # Default hooks
 │   ├── plugins/
 │   │   ├── mod.rs
-│   │   └── loader.rs             # Carregador de plugins
+│   │   └── loader.rs             # Plugin loader
 │   ├── prompts/
 │   │   ├── mod.rs
-│   │   ├── templates.rs          # Templates de prompts
-│   │   └── builders.rs           # Builders de prompts
+│   │   ├── templates.rs          # Prompt templates
+│   │   └── builders.rs           # Prompt builders
 │   ├── cache/
 │   │   ├── mod.rs
 │   │   └── lru.rs                # LRU cache
 │   └── types/
 │       ├── mod.rs
-│       ├── requests.rs           # Tipos de request
-│       ├── responses.rs          # Tipos de response
-│       ├── config.rs             # Configuração
+│       ├── requests.rs           # Request types
+│       ├── responses.rs          # Response types
+│       ├── config.rs             # Configuration
 │       └── errors.rs             # Error types
 ├── tests/
 │   ├── integration/
@@ -910,29 +915,29 @@ tetrad/
 │       ├── bad_code/
 │       └── patterns/
 ├── config/
-│   └── default.toml              # Configuração padrão
-├── plugins/                      # Plugins de exemplo
+│   └── default.toml              # Default configuration
+├── plugins/                      # Example plugins
 │   └── example_executor/
 └── .github/
     └── workflows/
         ├── ci.yml                # CI/CD
-        └── release.yml           # Release para crates.io
+        └── release.yml           # Release to crates.io
 ```
 
 ---
 
-## 8. Cargo.toml (Atualizado para Distribuição)
+## 8. Cargo.toml (Updated for Distribution)
 
 ```toml
 [package]
 name = "tetrad"
 version = "2.0.0"
-edition = "2024"
+edition = "2021"
 authors = ["SamoraDC <samora@example.com>"]
-description = "MCP de Consenso Quádruplo para Claude Code - Valida código usando Codex, Gemini e Qwen"
+description = "Quadruple Consensus MCP for Claude Code - Validates code using Codex, Gemini and Qwen"
 license = "MIT"
-repository = "https://github.com/seu-usuario/tetrad"
-homepage = "https://github.com/seu-usuario/tetrad"
+repository = "https://github.com/SamoraDC/tetrad"
+homepage = "https://github.com/SamoraDC/tetrad"
 documentation = "https://docs.rs/tetrad"
 readme = "README.md"
 keywords = ["mcp", "claude", "code-review", "ai", "consensus"]
@@ -950,7 +955,7 @@ path = "src/main.rs"
 default = ["cli", "sqlite"]
 cli = ["clap", "dialoguer", "indicatif"]
 sqlite = ["rusqlite"]
-postgres = ["sqlx"]  # Para enterprise
+postgres = ["sqlx"]  # For enterprise
 plugins = ["libloading"]
 
 [dependencies]
@@ -963,7 +968,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 # MCP Protocol
-# Nota: usar implementação própria ou crate da comunidade
+# Note: use own implementation or community crate
 
 # CLI
 clap = { version = "4.5", features = ["derive"], optional = true }
@@ -1001,7 +1006,7 @@ uuid = { version = "1.11", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 regex = "1.11"
 
-# Plugins (opcional)
+# Plugins (optional)
 libloading = { version = "0.8", optional = true }
 
 [dev-dependencies]
@@ -1023,22 +1028,22 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 ---
 
-## 9. Publicação e Distribuição
+## 9. Publishing and Distribution
 
-### 9.1 Publicar no crates.io
+### 9.1 Publish to crates.io
 
 ```bash
-# Login no crates.io
+# Login to crates.io
 cargo login
 
-# Verificar antes de publicar
+# Verify before publishing
 cargo publish --dry-run
 
-# Publicar
+# Publish
 cargo publish
 ```
 
-### 9.2 GitHub Releases com Binários
+### 9.2 GitHub Releases with Binaries
 
 ```yaml
 # .github/workflows/release.yml
@@ -1097,9 +1102,9 @@ jobs:
 ```ruby
 # Formula/tetrad.rb
 class Tetrad < Formula
-  desc "MCP de Consenso Quádruplo para Claude Code"
-  homepage "https://github.com/seu-usuario/tetrad"
-  url "https://github.com/seu-usuario/tetrad/releases/download/v2.0.0/tetrad-x86_64-apple-darwin.tar.gz"
+  desc "Quadruple Consensus MCP for Claude Code"
+  homepage "https://github.com/SamoraDC/tetrad"
+  url "https://github.com/SamoraDC/tetrad/releases/download/v2.0.0/tetrad-x86_64-apple-darwin.tar.gz"
   sha256 "..."
   license "MIT"
 
@@ -1115,21 +1120,25 @@ end
 
 ---
 
-## 10. Configuração no Claude Code
+## 10. Configuration in Claude Code
 
-### 10.1 Adição Automática (Recomendado)
+### 10.1 Automatic Addition (Recommended)
 
 ```bash
-# Similar ao Claude-Flow
+# Available in all projects
+claude mcp add --scope user tetrad -- tetrad serve
+
+# Or for current project only
 claude mcp add tetrad -- tetrad serve
 ```
 
-### 10.2 Manual em ~/.claude/settings.json
+### 10.2 Manual in ~/.config/claude-code/settings.json
 
 ```json
 {
   "mcpServers": {
     "tetrad": {
+      "type": "stdio",
       "command": "tetrad",
       "args": ["serve"],
       "env": {
@@ -1144,27 +1153,27 @@ claude mcp add tetrad -- tetrad serve
 
 ---
 
-## 11. Comparação com Claude-Flow
+## 11. Comparison with Claude-Flow
 
-| Feature | Claude-Flow | Tetrad |
-|---------|-------------|--------|
-| **Linguagem** | TypeScript | Rust |
-| **Foco** | Orquestração de agentes | Validação de código |
-| **Aprendizado** | ReasoningBank (RuVector) | ReasoningBank (SQLite) |
-| **Modelos** | Claude/GPT/Gemini/Ollama | Codex CLI/Gemini CLI/Qwen CLI |
-| **Agentes** | 54+ agentes | 3 avaliadores especializados |
-| **Consenso** | Raft/Byzantine/Gossip | Regra de Ouro/Fraco/Forte |
-| **Instalação** | npm install | cargo install |
-| **MCP Tools** | 175+ | 6 focadas |
-| **Uso de memória** | Médio (Node.js) | Baixo (Rust) |
-| **Latência** | ~100ms | ~50ms |
+| Feature               | Claude-Flow               | Tetrad                        |
+| --------------------- | ------------------------- | ----------------------------- |
+| **Language**          | TypeScript                | Rust                          |
+| **Focus**             | Agent orchestration       | Code validation               |
+| **Learning**          | ReasoningBank (RuVector)  | ReasoningBank (SQLite)        |
+| **Models**            | Claude/GPT/Gemini/Ollama  | Codex CLI/Gemini CLI/Qwen CLI |
+| **Agents**            | 54+ agents                | 3 specialized evaluators      |
+| **Consensus**         | Raft/Byzantine/Gossip     | Golden Rule/Weak/Strong       |
+| **Installation**      | npm install               | cargo install                 |
+| **MCP Tools**         | 175+                      | 6 focused                     |
+| **Memory Usage**      | Medium (Node.js)          | Low (Rust)                    |
+| **Latency**           | ~100ms                    | ~50ms                         |
 
-### Uso Conjunto
+### Using Together
 
-Tetrad e Claude-Flow podem trabalhar juntos:
+Tetrad and Claude-Flow can work together:
 
 ```yaml
-# claude-flow workflow que usa Tetrad
+# claude-flow workflow that uses Tetrad
 name: validated_swarm
 triggers:
   - on_code_generated
@@ -1181,67 +1190,73 @@ steps:
 
 ---
 
-## 12. Roadmap de Implementação (Atualizado)
+## 12. Implementation Roadmap (Updated)
 
-### Fase 1: Fundação (Semana 1) ✅ COMPLETA
-- [x] Setup projeto Rust com estrutura de crate publicável
-- [x] CLI básico com clap (init, serve, status, config, doctor, version)
-- [x] Implementar trait CliExecutor
-- [x] Testes unitários básicos (12 testes passando)
-- [x] CodexExecutor, GeminiExecutor, QwenExecutor implementados
-- [x] Health checks com `is_available()` e `version()`
-- [x] Parsing robusto de JSON com `ExecutorResponse::parse_from_output()`
+### Phase 1: Foundation ✅ COMPLETE
 
-### Fase 2: Executores (Semana 2) ✅ COMPLETA (incluída na Fase 1)
-- [x] CodexExecutor
-- [x] GeminiExecutor
-- [x] QwenExecutor
-- [x] Health checks
-- [x] Parsing robusto de JSON
+- [X] Setup Rust project with publishable crate structure
+- [X] Basic CLI with clap (init, serve, status, config, doctor, version)
+- [X] Implement CliExecutor trait
+- [X] Basic unit tests (12 tests passing)
+- [X] CodexExecutor, GeminiExecutor, QwenExecutor implemented
+- [X] Health checks with `is_available()` and `version()`
+- [X] Robust JSON parsing with `ExecutorResponse::parse_from_output()`
 
-### Fase 3: Consenso + ReasoningBank (Semana 3) ✅ COMPLETA
-- [x] Motor de consenso (rules.rs, aggregator.rs, engine.rs)
-- [x] ReasoningBank com SQLite (bank.rs)
-- [x] Ciclo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
-- [x] Export/Import de patterns (export.rs)
-- [x] Pattern matching (patterns.rs)
-- [x] CLI comandos: evaluate, history, export, import
-- [x] 66 testes passando
+### Phase 2: Executors ✅ COMPLETE (included in Phase 1)
 
-### Fase 4: MCP Server (Semana 4) ✅ COMPLETA
-- [x] Protocolo MCP (stdio) - JSON-RPC 2.0 com Content-Length headers
-- [x] 6 ferramentas expostas (review_plan/code/tests, confirm, final_check, status)
-- [x] Cache LRU com TTL para resultados de avaliação
-- [x] Hooks básicos (pre/post_evaluate, on_consensus, on_block)
-- [x] Sistema de confirmações integrado (confirm → final_check)
-- [x] 126 testes passando
+- [X] CodexExecutor
+- [X] GeminiExecutor
+- [X] QwenExecutor
+- [X] Health checks
+- [X] Robust JSON parsing
 
-### Fase 5: Polish (Semana 5) ✅ COMPLETA
-- [x] CLI interativo completo (dialoguer para config)
-- [x] Documentação (README.md, CLAUDE.md, CHANGELOG.md)
-- [x] Testes de integração (205 testes passando: 127 unitários + 78 integração)
-- [x] GitHub Actions CI/CD (ci.yml, release.yml)
-- [x] Correção de args dos executores (prompt posicional)
-- [x] CacheConfig conectado ao sistema
+### Phase 3: Consensus + ReasoningBank ✅ COMPLETE
 
-### Fase 6: Release (Semana 6) 🔄 EM ANDAMENTO
-- [ ] Publicar no crates.io
-- [ ] GitHub Releases com binários
+- [X] Consensus engine (rules.rs, aggregator.rs, engine.rs)
+- [X] ReasoningBank with SQLite (bank.rs)
+- [X] RETRIEVE→JUDGE→DISTILL→CONSOLIDATE cycle
+- [X] Export/Import of patterns (export.rs)
+- [X] Pattern matching (patterns.rs)
+- [X] CLI commands: evaluate, history, export, import
+- [X] 66 tests passing
+
+### Phase 4: MCP Server ✅ COMPLETE
+
+- [X] MCP protocol (stdio) - JSON-RPC 2.0 with Content-Length headers
+- [X] 6 exposed tools (review_plan/code/tests, confirm, final_check, status)
+- [X] LRU cache with TTL for evaluation results
+- [X] Basic hooks (pre/post_evaluate, on_consensus, on_block)
+- [X] Integrated confirmation system (confirm → final_check)
+- [X] 126 tests passing
+
+### Phase 5: Polish ✅ COMPLETE
+
+- [X] Complete interactive CLI (dialoguer for config)
+- [X] Documentation (README.md, CLAUDE.md, CHANGELOG.md)
+- [X] Integration tests (219 tests passing: 141 unit + 78 integration)
+- [X] GitHub Actions CI/CD (ci.yml, release.yml)
+- [X] Fix executor args (positional prompt)
+- [X] CacheConfig connected to system
+
+### Phase 6: Release 🔄 IN PROGRESS
+
+- [X] Publish to crates.io
+- [ ] GitHub Releases with binaries
 - [ ] Homebrew formula
-- [ ] Anúncio
+- [ ] Announcement
 
 ---
 
-## 13. Conclusão
+## 13. Conclusion
 
-**Tetrad v2.0** combina o melhor dos planos anteriores com as inovações do Claude-Flow:
+**Tetrad v2.0** combines the best of previous plans with Claude-Flow innovations:
 
-1. **Consenso quádruplo**: 4 modelos devem concordar
-2. **ReasoningBank**: Aprende com cada avaliação (RETRIEVE→JUDGE→DISTILL→CONSOLIDATE)
-3. **Distribuição fácil**: `cargo install tetrad`
-4. **CLI completa**: Comandos intuitivos como Claude-Flow
-5. **Extensível**: Sistema de hooks e plugins
-6. **Cross-session**: Persistência com SQLite
-7. **Compartilhável**: Export/Import de patterns aprendidos
+1. **Quadruple consensus**: 4 models must agree
+2. **ReasoningBank**: Learns from each evaluation (RETRIEVE→JUDGE→DISTILL→CONSOLIDATE)
+3. **Easy distribution**: `cargo install tetrad`
+4. **Complete CLI**: Intuitive commands like Claude-Flow
+5. **Extensible**: Hook and plugin system
+6. **Cross-session**: Persistence with SQLite
+7. **Shareable**: Export/Import of learned patterns
 
-O sistema está pronto para ser usado por qualquer desenvolvedor que queira **código validado por 4 inteligências** com **aprendizado contínuo**.
+The system is ready to be used by any developer who wants **code validated by 4 intelligences** with **continuous learning**.

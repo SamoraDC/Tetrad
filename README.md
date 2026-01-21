@@ -1,142 +1,223 @@
 # Tetrad
 
-[![CI](https://github.com/SamoraDC/tetrad/actions/workflows/ci.yml/badge.svg)](https://github.com/SamoraDC/tetrad/actions/workflows/ci.yml)
+[![CI](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml/badge.svg)](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/tetrad.svg)](https://crates.io/crates/tetrad)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-> MCP de Consenso Quádruplo para Claude Code
+> Quadruple Consensus MCP Server for Claude Code
 
-**Tetrad** é um servidor MCP (Model Context Protocol) de alta performance escrito em Rust que orquestra três ferramentas CLI de código (Codex, Gemini CLI, Qwen) para avaliar e validar todo trabalho produzido pelo Claude Code.
+**Tetrad** is a high-performance MCP (Model Context Protocol) server written in Rust that orchestrates three AI-powered CLI code evaluation tools (Codex, Gemini CLI, Qwen) to validate all code produced by Claude Code.
 
-O sistema implementa um protocolo de **consenso quádruplo** onde nenhum código ou plano é aceito sem a aprovação unânime de quatro inteligências: os três avaliadores externos + o próprio Claude Code.
+The system implements a **quadruple consensus protocol** where no code or plan is accepted without approval from four intelligences: the three external evaluators + Claude Code itself.
 
-## Características
+## Features
 
-- **Consenso Quádruplo**: 4 modelos devem concordar para aprovar código
-- **ReasoningBank**: Sistema de aprendizado contínuo com ciclo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
-- **Alta Performance**: Escrito em Rust com execução paralela via Tokio
-- **MCP Server**: Servidor JSON-RPC 2.0 sobre stdio para integração com Claude Code
-- **CLI Completa**: Comandos intuitivos (`init`, `serve`, `status`, `doctor`, `config`, etc.)
-- **Cache LRU**: Cache de resultados com TTL configurável
-- **Sistema de Hooks**: Callbacks pré/pós avaliação para customização
-- **Extensível**: Sistema de plugins para executores customizados
-- **Cross-session**: Persistência com SQLite
+- **Quadruple Consensus**: 4 AI models must agree to approve code
+- **ReasoningBank**: Continuous learning system with RETRIEVE→JUDGE→DISTILL→CONSOLIDATE cycle
+- **High Performance**: Written in Rust with parallel execution via Tokio
+- **MCP Server**: JSON-RPC 2.0 server over stdio for Claude Code integration
+- **Full CLI**: Intuitive commands (`init`, `serve`, `status`, `doctor`, `config`, etc.)
+- **LRU Cache**: Result caching with configurable TTL
+- **Hook System**: Pre/post evaluation callbacks for customization
+- **Extensible**: Plugin system for custom executors
+- **Cross-session**: SQLite persistence for patterns and history
 
-## Instalação
+## Quick Start
+
+### 1. Install Tetrad
 
 ```bash
-# Via cargo (recomendado)
+# Via cargo (recommended)
 cargo install tetrad
 
-# Via Homebrew (macOS/Linux) - em breve
-brew install tetrad
-
-# Build local
-git clone https://github.com/SamoraDC/tetrad
-cd tetrad
+# Or build from source
+git clone https://github.com/SamoraDC/Tetrad.git
+cd Tetrad
 cargo build --release
+sudo cp target/release/tetrad /usr/local/bin/
 ```
 
-## Uso Rápido
+### 2. Install External CLI Tools
+
+Tetrad requires at least one of the following AI CLI tools:
 
 ```bash
-# Inicializa configuração no projeto atual
-tetrad init
+# Codex CLI (OpenAI)
+npm install -g @openai/codex
+export OPENAI_API_KEY="your-openai-key"
 
-# Verifica status das CLIs (Codex, Gemini, Qwen)
+# Gemini CLI (Google)
+npm install -g @google/gemini-cli
+export GOOGLE_API_KEY="your-google-key"
+
+# Qwen CLI (Alibaba)
+pip install dashscope
+export DASHSCOPE_API_KEY="your-dashscope-key"
+```
+
+### 3. Verify Installation
+
+```bash
+# Check Tetrad version
+tetrad version
+
+# Check CLI availability
 tetrad status
 
-# Diagnostica problemas de configuração
+# Diagnose any issues
 tetrad doctor
-
-# Configuração interativa
-tetrad config
-
-# Inicia o servidor MCP
-tetrad serve
-
-# Avalia código manualmente (sem MCP)
-tetrad evaluate -c "fn main() { println!(\"Hello\"); }" -l rust
-
-# Mostra histórico de avaliações
-tetrad history --limit 20
-
-# Exporta/importa patterns do ReasoningBank
-tetrad export -o patterns.json
-tetrad import patterns.json
 ```
 
-## Integração com Claude Code
+### 4. Add to Claude Code CLI
 
 ```bash
-# Adiciona como MCP server
+# Add Tetrad as MCP server (available in all projects)
+claude mcp add --scope user tetrad -- tetrad serve
+
+# Or for current project only
 claude mcp add tetrad -- tetrad serve
+
+# Verify it's configured
+claude mcp list
 ```
 
-Ou manualmente em `~/.claude/settings.json`:
+### 5. Alternative: Manual Configuration
+
+Create or edit `.mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "tetrad": {
+      "type": "stdio",
       "command": "tetrad",
       "args": ["serve"],
       "env": {
-        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
+        "DASHSCOPE_API_KEY": "${DASHSCOPE_API_KEY}"
       }
     }
   }
 }
 ```
 
-## Comandos CLI
+Or for global user configuration in `~/.config/claude-code/settings.json`:
 
-```
-tetrad - CLI de Consenso Quádruplo para Claude Code
-
-COMANDOS:
-    init              Inicializa configuração no diretório atual
-    serve             Inicia o servidor MCP (usado pelo Claude Code)
-    status            Mostra status das CLIs (codex, gemini, qwen)
-    config            Configura opções interativamente
-    doctor            Diagnostica problemas de configuração
-    version           Mostra versão
-    evaluate          Avalia código manualmente (sem MCP)
-    history           Mostra histórico de avaliações do ReasoningBank
-    export            Exporta patterns do ReasoningBank
-    import            Importa patterns para o ReasoningBank
-
-OPÇÕES:
-    -c, --config <FILE>    Arquivo de configuração (default: tetrad.toml)
-    -v, --verbose          Modo verbose
-    -q, --quiet            Modo silencioso
-    -h, --help             Mostra ajuda
+```json
+{
+  "mcpServers": {
+    "tetrad": {
+      "type": "stdio",
+      "command": "tetrad",
+      "args": ["serve"]
+    }
+  }
+}
 ```
 
-## Ferramentas MCP
+## How It Works
 
-Quando executando como servidor MCP, o Tetrad expõe 6 ferramentas:
-
-| Ferramenta | Descrição |
-|------------|-----------|
-| `tetrad_review_plan` | Revisa planos de implementação antes de codificar |
-| `tetrad_review_code` | Revisa código antes de salvar |
-| `tetrad_review_tests` | Revisa testes antes de finalizar |
-| `tetrad_confirm` | Confirma acordo com feedback recebido |
-| `tetrad_final_check` | Verificação final antes de commit |
-| `tetrad_status` | Verifica saúde dos avaliadores |
-
-### Exemplo de Fluxo
+When you ask Claude Code to write code, Tetrad automatically validates it:
 
 ```
-1. Claude Code gera plano → tetrad_review_plan → Feedback
-2. Claude Code implementa → tetrad_review_code → Feedback
-3. Claude Code ajusta → tetrad_confirm → Confirmação
-4. Claude Code finaliza → tetrad_final_check → Certificado
+You: "Create a function in Rust that calculates the average of a vector"
+
+Claude Code:
+1. Writes the code
+2. Calls tetrad_review_code automatically
+3. Tetrad sends to Codex, Gemini and Qwen for evaluation
+4. Returns consolidated consensus from all 3 evaluators
+
+Tetrad Response:
+┌─────────────────────────────────────────────┐
+│ DECISION: PASS ✓                            │
+│ Score: 92/100                               │
+│ Consensus: Yes (3/3 approved)               │
+│                                             │
+│ Votes:                                      │
+│   • Codex:  Pass (95)                       │
+│   • Gemini: Pass (90)                       │
+│   • Qwen:   Pass (92)                       │
+│                                             │
+│ Suggestions:                                │
+│   - Consider handling empty vector case     │
+└─────────────────────────────────────────────┘
+
+Claude Code: Saves the approved code
 ```
 
-## Arquitetura
+### When Issues Are Found:
+
+```
+Tetrad Response:
+┌─────────────────────────────────────────────┐
+│ DECISION: BLOCK ✗                           │
+│ Score: 26/100                               │
+│ Consensus: Yes (3/3 rejected)               │
+│                                             │
+│ Votes:                                      │
+│   • Codex:  Fail (30) - division by zero    │
+│   • Gemini: Fail (25) - no error handling   │
+│   • Qwen:   Fail (25) - unsafe operation    │
+│                                             │
+│ Issues:                                     │
+│   - Division by zero not handled            │
+│   - Missing input validation                │
+│   - No Result/Option return type            │
+└─────────────────────────────────────────────┘
+
+Claude Code: Fixes the code and resubmits
+```
+
+## CLI Commands
+
+```
+tetrad - Quadruple Consensus CLI for Claude Code
+
+COMMANDS:
+    init              Initialize configuration in current directory
+    serve             Start the MCP server (used by Claude Code)
+    status            Show CLI status (codex, gemini, qwen)
+    config            Configure options interactively
+    doctor            Diagnose configuration issues
+    version           Show version
+    evaluate          Evaluate code manually (without MCP)
+    history           Show evaluation history from ReasoningBank
+    export            Export patterns from ReasoningBank
+    import            Import patterns into ReasoningBank
+
+OPTIONS:
+    -c, --config <FILE>    Configuration file (default: tetrad.toml)
+    -v, --verbose          Verbose mode
+    -q, --quiet            Quiet mode
+    -h, --help             Show help
+```
+
+## MCP Tools
+
+When running as MCP server, Tetrad exposes 6 tools:
+
+| Tool | Description |
+|------|-------------|
+| `tetrad_review_plan` | Review implementation plans before coding |
+| `tetrad_review_code` | Review code before saving |
+| `tetrad_review_tests` | Review tests before finalizing |
+| `tetrad_confirm` | Confirm agreement with received feedback |
+| `tetrad_final_check` | Final verification before commit |
+| `tetrad_status` | Check health of evaluators |
+
+### Workflow Example
+
+```
+1. Claude Code generates plan → tetrad_review_plan → Feedback
+2. Claude Code implements   → tetrad_review_code → Feedback
+3. Claude Code adjusts      → tetrad_confirm     → Confirmation
+4. Claude Code finalizes    → tetrad_final_check → Certificate
+```
+
+## Architecture
 
 ```
 Claude Code → MCP Protocol (stdio) → Tetrad Server (Rust)
@@ -144,7 +225,7 @@ Claude Code → MCP Protocol (stdio) → Tetrad Server (Rust)
                     ┌─────────────────────┼─────────────────────┐
                     ▼                     ▼                     ▼
               Codex CLI            Gemini CLI              Qwen CLI
-              (sintaxe)           (arquitetura)            (lógica)
+              (syntax)            (architecture)           (logic)
                     │                     │                     │
                     └─────────────────────┼─────────────────────┘
                                           ▼
@@ -152,89 +233,64 @@ Claude Code → MCP Protocol (stdio) → Tetrad Server (Rust)
                                           │
                             ┌─────────────┴─────────────┐
                             ▼                           ▼
-                      Cache LRU                  ReasoningBank
-                      (resultados)                 (SQLite)
-                                          RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
+                      LRU Cache                  ReasoningBank
+                      (results)                    (SQLite)
+                                    RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
 ```
 
-### Especialização dos Executores
+### Executor Specializations
 
-| Executor | CLI | Especialização |
+| Executor | CLI | Specialization |
 |----------|-----|----------------|
-| **Codex** | `codex` | Sintaxe e convenções de código |
-| **Gemini** | `gemini -o json` | Arquitetura e design |
-| **Qwen** | `qwen` | Bugs lógicos e correção |
+| **Codex** | `codex exec --json` | Syntax and code conventions |
+| **Gemini** | `gemini -o json` | Architecture and design |
+| **Qwen** | `qwen` | Logic bugs and correctness |
 
-### Regras de Consenso
+### Consensus Rules
 
-| Regra | Requisito | Uso |
-|-------|-----------|-----|
-| **Golden** | Unanimidade (3/3) | Código crítico, segurança |
-| **Strong** | 3/3 ou 2/3 com alta confiança | Padrão |
-| **Weak** | Maioria simples (2/3) | Prototipação rápida |
+| Rule | Requirement | Use Case |
+|------|-------------|----------|
+| **Golden** | Unanimity (3/3) | Critical code, security |
+| **Strong** | 3/3 or 2/3 with high confidence | Default |
+| **Weak** | Simple majority (2/3) | Rapid prototyping |
 
 ## ReasoningBank
 
-O ReasoningBank é um sistema de aprendizado contínuo que armazena e consolida padrões de código:
+The ReasoningBank is a continuous learning system that stores and consolidates code patterns:
 
-### Ciclo de Aprendizado
+### Learning Cycle
 
 ```
 RETRIEVE → JUDGE → DISTILL → CONSOLIDATE
     │         │        │           │
-    │         │        │           └─ Merge patterns similares
-    │         │        └─ Extrai novos patterns
-    │         └─ Avalia código com contexto
-    └─ Busca patterns relevantes
+    │         │        │           └─ Merge similar patterns
+    │         │        └─ Extract new patterns
+    │         └─ Evaluate code with context
+    └─ Search for relevant patterns
 ```
 
-### Tipos de Patterns
+### Pattern Types
 
-- **AntiPattern**: Padrões a evitar (bugs, vulnerabilidades, code smells)
-- **GoodPattern**: Padrões a seguir (boas práticas, padrões idiomáticos)
-- **Ambiguous**: Padrões com classificação incerta (requer mais dados)
+- **AntiPattern**: Patterns to avoid (bugs, vulnerabilities, code smells)
+- **GoodPattern**: Patterns to follow (best practices, idiomatic patterns)
+- **Ambiguous**: Patterns with uncertain classification (needs more data)
 
-### Comandos do ReasoningBank
+### ReasoningBank Commands
 
 ```bash
-# Ver histórico de avaliações
+# View evaluation history
 tetrad history --limit 50
 
-# Exportar patterns para compartilhar
+# Export patterns to share
 tetrad export -o team-patterns.json
 
-# Importar patterns de outro ReasoningBank
+# Import patterns from another ReasoningBank
 tetrad import team-patterns.json
 ```
 
-## Cache LRU
+## Configuration
 
-O sistema inclui um cache LRU para evitar reavaliações desnecessárias:
-
-- **Capacidade**: Configurável (padrão: 1000 entradas)
-- **TTL**: Tempo de vida configurável (padrão: 5 minutos)
-- **Chave**: Hash do código + linguagem + tipo de avaliação
-- **Invalidação**: Automática por TTL ou manual
-
-## Sistema de Hooks
-
-Hooks permitem customizar o comportamento em pontos específicos:
-
-| Hook | Quando | Uso |
-|------|--------|-----|
-| `pre_evaluate` | Antes da avaliação | Modificar request, pular avaliação |
-| `post_evaluate` | Após avaliação | Logging, métricas, notificações |
-| `on_consensus` | Quando há consenso | Ações automáticas em aprovação |
-| `on_block` | Quando código bloqueado | Alertas, rollback automático |
-
-### Hooks Builtin
-
-- **LoggingHook**: Registra todas as avaliações
-- **MetricsHook**: Coleta estatísticas de uso
-
-## Configuração
-
-O arquivo `tetrad.toml` é criado automaticamente com `tetrad init`:
+The `tetrad.toml` file is created automatically with `tetrad init`:
 
 ```toml
 [general]
@@ -244,7 +300,7 @@ timeout_secs = 60
 [executors.codex]
 enabled = true
 command = "codex"
-args = []
+args = ["exec", "--json"]
 timeout_secs = 30
 
 [executors.gemini]
@@ -276,161 +332,209 @@ capacity = 1000
 ttl_secs = 300
 ```
 
-### Configuração Interativa
+### Interactive Configuration
 
-Use `tetrad config` para configurar interativamente:
+Use `tetrad config` for interactive configuration:
 
 ```
-🔧 Configuração Interativa do Tetrad
+🔧 Tetrad Interactive Configuration
 
-O que deseja configurar?
-❯ Configurações Gerais
-  Executores (Codex, Gemini, Qwen)
-  Consenso
+What would you like to configure?
+❯ General Settings
+  Executors (Codex, Gemini, Qwen)
+  Consensus
   ReasoningBank
-  Salvar e Sair
-  Sair sem Salvar
+  Save and Exit
+  Exit without Saving
 ```
 
-## Status do Desenvolvimento
+## LRU Cache
 
-### ✅ Fase 1 & 2: Fundação + Executores (Completa)
+The system includes an LRU cache to avoid unnecessary re-evaluations:
 
-- [x] Setup projeto Rust com estrutura de crate publicável
-- [x] CLI com clap (init, serve, status, config, doctor, version)
-- [x] Trait `CliExecutor` com implementações para Codex, Gemini, Qwen
-- [x] Sistema de configuração TOML
-- [x] Health checks (`is_available()`, `version()`)
-- [x] Parsing robusto de JSON
+- **Capacity**: Configurable (default: 1000 entries)
+- **TTL**: Configurable time-to-live (default: 5 minutes)
+- **Key**: Hash of code + language + evaluation type
+- **Invalidation**: Automatic by TTL or manual
 
-### ✅ Fase 3: Consenso + ReasoningBank (Completa)
+## Hook System
 
-- [x] Motor de consenso com 3 regras (Golden, Strong, Weak)
-- [x] ReasoningBank com SQLite
-- [x] Ciclo completo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
-- [x] Export/Import de patterns
-- [x] Comandos history/export/import
+Hooks allow customizing behavior at specific points:
 
-### ✅ Fase 4: MCP Server (Completa)
+| Hook | When | Use |
+|------|------|-----|
+| `pre_evaluate` | Before evaluation | Modify request, skip evaluation |
+| `post_evaluate` | After evaluation | Logging, metrics, notifications |
+| `on_consensus` | When consensus reached | Automatic actions on approval |
+| `on_block` | When code blocked | Alerts, automatic rollback |
 
-- [x] Protocolo MCP (stdio) - JSON-RPC 2.0 com Content-Length headers
-- [x] 6 ferramentas expostas (review_plan/code/tests, confirm, final_check, status)
-- [x] Cache LRU com TTL para resultados de avaliação
-- [x] Hooks básicos (pre/post_evaluate, on_consensus, on_block)
-- [x] Sistema de confirmações integrado (confirm → final_check)
+### Built-in Hooks
 
-### ✅ Fase 5: Polish (Completa)
+- **LoggingHook**: Records all evaluations
+- **MetricsHook**: Collects usage statistics
 
-- [x] CLI interativo completo (dialoguer)
-- [x] Documentação completa (README.md, CLAUDE.md)
-- [x] Testes de integração (205 testes passando)
-- [x] GitHub Actions CI/CD (build, test, lint, audit, release)
-
-### 🔄 Fase 6: Release (Em Andamento)
-
-- [ ] Publicar no crates.io
-- [ ] GitHub Releases com binários
-- [ ] Homebrew formula
-
-## Estrutura do Projeto
+## Project Structure
 
 ```
 tetrad/
-├── Cargo.toml              # Manifesto do crate
-├── CLAUDE.md               # Documentação para Claude Code
-├── README.md               # Este arquivo
-├── Tetrad.md               # Especificação completa
+├── Cargo.toml              # Crate manifest
+├── CLAUDE.md               # Documentation for Claude Code
+├── README.md               # This file
+├── Tetrad.md               # Complete specification
 ├── src/
 │   ├── main.rs             # Entry point (CLI)
-│   ├── lib.rs              # Biblioteca exportável
+│   ├── lib.rs              # Exportable library
 │   ├── cli/
-│   │   ├── mod.rs          # Definição CLI com clap
-│   │   ├── commands.rs     # Implementação dos comandos
-│   │   └── interactive.rs  # Configuração interativa (dialoguer)
+│   │   ├── mod.rs          # CLI definition with clap
+│   │   ├── commands.rs     # Command implementations
+│   │   └── interactive.rs  # Interactive configuration (dialoguer)
 │   ├── executors/
 │   │   ├── mod.rs
-│   │   ├── base.rs         # Trait CliExecutor
-│   │   ├── codex.rs        # Executor Codex
-│   │   ├── gemini.rs       # Executor Gemini
-│   │   └── qwen.rs         # Executor Qwen
+│   │   ├── base.rs         # CliExecutor trait
+│   │   ├── codex.rs        # Codex executor
+│   │   ├── gemini.rs       # Gemini executor
+│   │   └── qwen.rs         # Qwen executor
 │   ├── types/
 │   │   ├── mod.rs
-│   │   ├── config.rs       # Configuração TOML
+│   │   ├── config.rs       # TOML configuration
 │   │   ├── errors.rs       # TetradError/TetradResult
 │   │   ├── requests.rs     # EvaluationRequest
 │   │   └── responses.rs    # EvaluationResult, ModelVote
 │   ├── consensus/
 │   │   ├── mod.rs          # Exports
 │   │   ├── engine.rs       # ConsensusEngine
-│   │   └── rules.rs        # Regras de votação
+│   │   ├── aggregator.rs   # Vote aggregation
+│   │   └── rules.rs        # Voting rules
 │   ├── reasoning/
 │   │   ├── mod.rs          # Exports
 │   │   ├── bank.rs         # ReasoningBank
 │   │   ├── patterns.rs     # Pattern types
-│   │   └── sqlite.rs       # Storage SQLite
+│   │   ├── sqlite.rs       # SQLite storage
+│   │   └── export.rs       # Import/Export
 │   ├── mcp/
 │   │   ├── mod.rs          # Exports
-│   │   ├── server.rs       # Servidor MCP
-│   │   ├── protocol.rs     # Tipos JSON-RPC
-│   │   ├── tools.rs        # Handlers das ferramentas
-│   │   └── transport.rs    # Transporte stdio
+│   │   ├── server.rs       # MCP server
+│   │   ├── protocol.rs     # JSON-RPC types
+│   │   ├── tools.rs        # Tool handlers
+│   │   └── transport.rs    # Stdio transport
 │   ├── cache/
 │   │   ├── mod.rs          # Exports
-│   │   └── lru.rs          # Cache LRU
+│   │   └── lru.rs          # LRU cache
 │   └── hooks/
-│       ├── mod.rs          # Trait Hook e HookSystem
-│       └── builtin.rs      # Hooks padrão
+│       ├── mod.rs          # Hook trait and HookSystem
+│       └── builtin.rs      # Default hooks
 └── tests/
-    └── integration/        # Testes de integração
+    ├── cli_integration.rs
+    ├── consensus_integration.rs
+    ├── mcp_integration.rs
+    └── reasoning_integration.rs
 ```
 
-## Desenvolvimento
+## Development
 
 ```bash
 # Build
 cargo build
 cargo build --release
 
-# Testes
-cargo test
+# Tests
+cargo test                          # All tests
 cargo test --lib                    # Unit tests only
 cargo test --tests                  # Integration tests only
 
 # Lint
-cargo clippy
+cargo clippy --all-targets --all-features -- -D warnings
 
-# Formatação
+# Format
 cargo fmt
 cargo fmt --check
 
-# Documentação
+# Documentation
 cargo doc --open
 
-# Rodar CLI
+# Run CLI
 cargo run -- status
 cargo run -- doctor
 cargo run -- version
 cargo run -- config
 ```
 
-## Pré-requisitos
+## Troubleshooting
 
-Para usar o Tetrad, você precisa ter instalado pelo menos uma das CLIs:
+### "CLI not found"
 
-- **Codex CLI**: [github.com/openai/codex-cli](https://github.com/openai/codex-cli)
-- **Gemini CLI**: [github.com/google/gemini-cli](https://github.com/google/gemini-cli)
-- **Qwen CLI**: [github.com/qwenlm/qwen-cli](https://github.com/qwenlm/qwen-cli)
+```bash
+# Check if CLIs are in PATH
+which codex
+which gemini
+which qwen
 
-Verifique a disponibilidade com:
+# Check configuration
+tetrad doctor
+```
+
+### "stdin is not a terminal" (Codex)
+
+Make sure your config uses `exec --json`:
+
+```toml
+[executors.codex]
+args = ["exec", "--json"]
+```
+
+### "Response does not contain valid JSON" (Gemini)
+
+Make sure your config uses `-o json`:
+
+```toml
+[executors.gemini]
+args = ["-o", "json"]
+```
+
+### Check MCP status in Claude Code
+
+Inside Claude Code, run:
+
+```
+/mcp
+```
+
+## Prerequisites
+
+To use Tetrad, you need at least one of the AI CLIs installed:
+
+- **Codex CLI**: [OpenAI Codex](https://github.com/openai/codex)
+- **Gemini CLI**: [Google Gemini](https://github.com/google-gemini/gemini-cli)
+- **Qwen CLI**: [Alibaba Qwen](https://github.com/QwenLM/Qwen)
+
+Check availability with:
 
 ```bash
 tetrad status
 ```
 
-## Licença
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
 
 MIT
 
-## Autor
+## Author
 
 SamoraDC
+
+---
+
+**Links:**
+- [Crates.io](https://crates.io/crates/tetrad)
+- [Documentation](https://docs.rs/tetrad)
+- [GitHub Repository](https://github.com/SamoraDC/Tetrad)
+- [Issue Tracker](https://github.com/SamoraDC/Tetrad/issues)

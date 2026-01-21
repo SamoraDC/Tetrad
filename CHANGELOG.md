@@ -1,39 +1,51 @@
 # Changelog
 
-Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
+All notable changes to this project will be documented in this file.
 
-O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
-e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Em desenvolvimento
-- Publicação no crates.io
-- GitHub Releases com binários
+### In Development
 - Homebrew formula
+- Additional language support
 
-## [0.1.0] - 2025-01-21
+## [0.1.1] - 2026-01-21
 
-### Adicionado
-- **CLI completa** com comandos: init, serve, status, config, doctor, version, evaluate, history, export, import
-- **MCP Server** com protocolo JSON-RPC 2.0 sobre stdio
-- **6 ferramentas MCP**: tetrad_review_plan, tetrad_review_code, tetrad_review_tests, tetrad_confirm, tetrad_final_check, tetrad_status
-- **Motor de consenso** com 3 regras: Golden (unanimidade), Strong (3/3), Weak (maioria)
-- **ReasoningBank** com ciclo RETRIEVE→JUDGE→DISTILL→CONSOLIDATE
-- **Cache LRU** com TTL configurável
-- **Sistema de Hooks**: pre_evaluate, post_evaluate, on_consensus, on_block
-- **CLI interativo** com dialoguer para configuração
-- **Executores**: Codex, Gemini CLI, Qwen
-- **Persistência SQLite** para patterns e trajetórias
-- **Export/Import** de patterns do ReasoningBank
-- **GitHub Actions CI/CD** para build, test e release
-- **205 testes** (127 unitários + 78 integração)
+### Fixed
+- Fixed clippy warnings for redundant closures in `transport.rs`
+- Fixed cache expiration test for cross-platform compatibility (macOS)
+- Fixed formatting issues
 
-### Características
-- Escrito em Rust para alta performance
-- Execução paralela via Tokio
-- Configuração via TOML (tetrad.toml)
-- Integração direta com Claude Code via `claude mcp add`
+### Changed
+- Updated Codex executor to use `exec --json` for non-interactive mode
+- Updated Gemini executor to parse wrapper JSON response
+- Improved error handling in executors
 
-[Unreleased]: https://github.com/SamoraDC/tetrad/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/SamoraDC/tetrad/releases/tag/v0.1.0
+## [0.1.0] - 2026-01-21
+
+### Added
+- **Full CLI** with commands: init, serve, status, config, doctor, version, evaluate, history, export, import
+- **MCP Server** with JSON-RPC 2.0 protocol over stdio
+- **6 MCP tools**: tetrad_review_plan, tetrad_review_code, tetrad_review_tests, tetrad_confirm, tetrad_final_check, tetrad_status
+- **Consensus engine** with 3 rules: Golden (unanimity), Strong (3/3), Weak (majority)
+- **ReasoningBank** with RETRIEVE→JUDGE→DISTILL→CONSOLIDATE cycle
+- **LRU Cache** with configurable TTL
+- **Hook System**: pre_evaluate, post_evaluate, on_consensus, on_block
+- **Interactive CLI** with dialoguer for configuration
+- **Executors**: Codex, Gemini CLI, Qwen
+- **SQLite persistence** for patterns and trajectories
+- **Export/Import** of ReasoningBank patterns
+- **GitHub Actions CI/CD** for build, test and release
+- **219 tests** (141 unit + 78 integration)
+
+### Features
+- Written in Rust for high performance
+- Parallel execution via Tokio
+- Configuration via TOML (tetrad.toml)
+- Direct integration with Claude Code via `claude mcp add`
+
+[Unreleased]: https://github.com/SamoraDC/Tetrad/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/SamoraDC/Tetrad/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/SamoraDC/Tetrad/releases/tag/v0.1.0
