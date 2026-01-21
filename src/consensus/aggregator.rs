@@ -65,9 +65,9 @@ impl VoteAggregator {
         for (executor, vote) in votes {
             for issue in &vote.issues {
                 let key = Self::normalize_issue(issue);
-                let entry = issue_counts.entry(key.clone()).or_insert_with(|| {
-                    (Vec::new(), Self::infer_severity(issue))
-                });
+                let entry = issue_counts
+                    .entry(key.clone())
+                    .or_insert_with(|| (Vec::new(), Self::infer_severity(issue)));
                 entry.0.push(executor.clone());
             }
         }
@@ -114,10 +114,7 @@ impl VoteAggregator {
     }
 
     /// Consolida feedback de todos os executores.
-    pub fn consolidate_feedback(
-        votes: &HashMap<String, ModelVote>,
-        decision: &Decision,
-    ) -> String {
+    pub fn consolidate_feedback(votes: &HashMap<String, ModelVote>, decision: &Decision) -> String {
         let mut feedback = String::new();
 
         // Cabeçalho baseado na decisão
@@ -364,13 +361,7 @@ mod tests {
                 vec!["sql injection vulnerability"],
                 vec!["Sanitize inputs"],
             ),
-            create_vote_with_issues(
-                "Qwen",
-                Vote::Pass,
-                85,
-                vec![],
-                vec![],
-            ),
+            create_vote_with_issues("Qwen", Vote::Pass, 85, vec![], vec![]),
         ]
         .into_iter()
         .collect();

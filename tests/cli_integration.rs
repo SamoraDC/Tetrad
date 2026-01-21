@@ -49,10 +49,10 @@ fn test_status_command_runs() {
     // Deve conter referências aos executores
     let combined = format!("{}{}", stdout, stderr);
     assert!(
-        combined.contains("Codex") ||
-        combined.contains("codex") ||
-        combined.contains("Status") ||
-        combined.contains("status")
+        combined.contains("Codex")
+            || combined.contains("codex")
+            || combined.contains("Status")
+            || combined.contains("status")
     );
 }
 
@@ -69,9 +69,7 @@ fn test_doctor_command_runs() {
     // Deve mostrar diagnóstico
     let combined = format!("{}{}", stdout, stderr);
     assert!(
-        combined.contains("Diagn") ||
-        combined.contains("config") ||
-        combined.contains("Doctor")
+        combined.contains("Diagn") || combined.contains("config") || combined.contains("Doctor")
     );
 }
 

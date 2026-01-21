@@ -252,8 +252,7 @@ mod tests {
     #[test]
     fn test_cache_key_normalization() {
         let key1 = EvaluationCache::cache_key("fn main() {}", "rust", &EvaluationType::Code);
-        let key2 =
-            EvaluationCache::cache_key("  fn main() {}  ", "rust", &EvaluationType::Code);
+        let key2 = EvaluationCache::cache_key("  fn main() {}  ", "rust", &EvaluationType::Code);
 
         // Whitespace extra é ignorado
         assert_eq!(key1, key2);

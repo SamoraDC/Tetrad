@@ -88,10 +88,9 @@ impl McpServer {
             "tools/call" => self.handle_tools_call(request).await,
 
             // Método desconhecido
-            _ => JsonRpcResponse::error(
-                request.id,
-                JsonRpcError::method_not_found(&request.method),
-            ),
+            _ => {
+                JsonRpcResponse::error(request.id, JsonRpcError::method_not_found(&request.method))
+            }
         }
     }
 
@@ -169,7 +168,10 @@ impl McpServer {
 
         tracing::info!(tool = %params.name, "Calling tool");
 
-        let result = self.tools.handle_tool_call(&params.name, params.arguments).await;
+        let result = self
+            .tools
+            .handle_tool_call(&params.name, params.arguments)
+            .await;
 
         // Converte ToolResult para Value
         let result_value = serde_json::to_value(&result).unwrap_or_else(|_| {
@@ -229,10 +231,7 @@ mod tests {
         assert_eq!(tools.len(), 6);
 
         // Verifica que todos os tools esperados estão presentes
-        let tool_names: Vec<&str> = tools
-            .iter()
-            .map(|t| t["name"].as_str().unwrap())
-            .collect();
+        let tool_names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
         assert!(tool_names.contains(&"tetrad_review_code"));
         assert!(tool_names.contains(&"tetrad_status"));
     }

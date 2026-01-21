@@ -173,10 +173,7 @@ fn configure_single_executor(
         .default(executor.args.join(" "))
         .interact_text()?;
 
-    executor.args = args_str
-        .split_whitespace()
-        .map(String::from)
-        .collect();
+    executor.args = args_str.split_whitespace().map(String::from).collect();
 
     // Timeout
     let timeout: u64 = Input::with_theme(theme)
@@ -366,7 +363,10 @@ pub fn show_config_summary(config: &Config) {
     println!("├─────────────────────────────────────────┤");
     println!("│ Consenso                                │");
     println!("├─────────────────────────────────────────┤");
-    println!("│ Regra: {:<32} │", format!("{:?}", config.consensus.default_rule));
+    println!(
+        "│ Regra: {:<32} │",
+        format!("{:?}", config.consensus.default_rule)
+    );
     println!("│ Score mínimo: {:<25} │", config.consensus.min_score);
     println!("│ Max loops: {:<28} │", config.consensus.max_loops);
     println!("├─────────────────────────────────────────┤");
@@ -374,10 +374,17 @@ pub fn show_config_summary(config: &Config) {
     println!("├─────────────────────────────────────────┤");
     println!(
         "│ Habilitado: {:<27} │",
-        if config.reasoning.enabled { "Sim" } else { "Não" }
+        if config.reasoning.enabled {
+            "Sim"
+        } else {
+            "Não"
+        }
     );
     if config.reasoning.enabled {
-        println!("│ Consolidação: a cada {:<17} │", format!("{} avaliações", config.reasoning.consolidation_interval));
+        println!(
+            "│ Consolidação: a cada {:<17} │",
+            format!("{} avaliações", config.reasoning.consolidation_interval)
+        );
     }
     println!("├─────────────────────────────────────────┤");
     println!("│ Cache                                   │");

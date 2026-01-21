@@ -179,10 +179,7 @@ impl HookSystem {
     /// Executa hooks de pre_evaluate.
     ///
     /// Retorna o resultado final (Continue, Skip ou ModifyRequest).
-    pub async fn run_pre_evaluate(
-        &self,
-        request: &EvaluationRequest,
-    ) -> TetradResult<HookResult> {
+    pub async fn run_pre_evaluate(&self, request: &EvaluationRequest) -> TetradResult<HookResult> {
         let context = HookContext::PreEvaluate { request };
 
         for hook in &self.pre_evaluate {

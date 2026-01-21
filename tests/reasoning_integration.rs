@@ -1,9 +1,9 @@
 //! Testes de integração para o ReasoningBank do Tetrad.
 
-use tempfile::TempDir;
 use std::path::PathBuf;
+use tempfile::TempDir;
 
-use tetrad::reasoning::{ReasoningBank, PatternType};
+use tetrad::reasoning::{PatternType, ReasoningBank};
 use tetrad::types::responses::EvaluationResult;
 
 fn temp_db_path() -> (TempDir, PathBuf) {
@@ -56,14 +56,16 @@ mod cycle_tests {
         let result = sample_result();
 
         // Judge deve funcionar mesmo sem patterns
-        let judgment = bank.judge(
-            "test-req-1",
-            code,
-            "rust",
-            &result,
-            1,  // loops_to_consensus
-            3,  // max_loops
-        ).expect("Failed to judge");
+        let judgment = bank
+            .judge(
+                "test-req-1",
+                code,
+                "rust",
+                &result,
+                1, // loops_to_consensus
+                3, // max_loops
+            )
+            .expect("Failed to judge");
 
         // Deve produzir um resultado de julgamento
         // patterns_updated é usize, verificamos que a operação completa sem erro
@@ -201,7 +203,9 @@ mod pattern_tests {
         let bank = ReasoningBank::new(&db_path).expect("Failed to create bank");
 
         // Padrão não existe inicialmente
-        let exists = bank.pattern_exists("test_signature", "test_category").unwrap();
+        let exists = bank
+            .pattern_exists("test_signature", "test_category")
+            .unwrap();
         assert!(!exists);
     }
 }

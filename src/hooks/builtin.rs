@@ -190,7 +190,8 @@ impl Hook for MetricsHook {
             }
 
             // Acumula score
-            self.score_sum.fetch_add(result.score as u64, Ordering::Relaxed);
+            self.score_sum
+                .fetch_add(result.score as u64, Ordering::Relaxed);
         }
 
         Ok(HookResult::Continue)

@@ -339,7 +339,8 @@ mod tests {
             timestamp: Utc::now(),
         };
 
-        bank.judge("test-1", "test code", "rust", &result, 3, 3).unwrap();
+        bank.judge("test-1", "test code", "rust", &result, 3, 3)
+            .unwrap();
 
         // Exporta
         let export_path = dir.path().join("export.json");

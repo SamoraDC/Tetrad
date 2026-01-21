@@ -43,8 +43,8 @@ impl StdioTransport {
             .map_err(crate::types::errors::TetradError::Io)?;
 
         // Parse do JSON
-        let request: JsonRpcRequest = serde_json::from_slice(&body)
-            .map_err(crate::types::errors::TetradError::Json)?;
+        let request: JsonRpcRequest =
+            serde_json::from_slice(&body).map_err(crate::types::errors::TetradError::Json)?;
 
         tracing::debug!(
             method = %request.method,
@@ -62,7 +62,8 @@ impl StdioTransport {
 
         loop {
             let mut line = String::new();
-            let bytes_read = self.reader
+            let bytes_read = self
+                .reader
                 .read_line(&mut line)
                 .map_err(crate::types::errors::TetradError::Io)?;
 
@@ -87,12 +88,9 @@ impl StdioTransport {
 
             // Parse do header Content-Length
             if let Some(value) = trimmed.strip_prefix("Content-Length:") {
-                content_length = Some(
-                    value
-                        .trim()
-                        .parse()
-                        .map_err(|_| crate::types::errors::TetradError::config("Invalid Content-Length header"))?,
-                );
+                content_length = Some(value.trim().parse().map_err(|_| {
+                    crate::types::errors::TetradError::config("Invalid Content-Length header")
+                })?);
             }
         }
 
@@ -103,8 +101,8 @@ impl StdioTransport {
 
     /// Escreve uma resposta JSON-RPC para stdout.
     pub fn write_response(&mut self, response: &JsonRpcResponse) -> TetradResult<()> {
-        let body = serde_json::to_string(response)
-            .map_err(crate::types::errors::TetradError::Json)?;
+        let body =
+            serde_json::to_string(response).map_err(crate::types::errors::TetradError::Json)?;
 
         self.write_message(&body)?;
 
@@ -119,8 +117,8 @@ impl StdioTransport {
 
     /// Envia uma notificação (mensagem sem ID que não espera resposta).
     pub fn send_notification(&mut self, notification: &JsonRpcNotification) -> TetradResult<()> {
-        let body = serde_json::to_string(notification)
-            .map_err(crate::types::errors::TetradError::Json)?;
+        let body =
+            serde_json::to_string(notification).map_err(crate::types::errors::TetradError::Json)?;
 
         self.write_message(&body)?;
 
@@ -190,12 +188,9 @@ impl StringTransport {
             }
 
             if let Some(value) = trimmed.strip_prefix("Content-Length:") {
-                content_length = Some(
-                    value
-                        .trim()
-                        .parse()
-                        .map_err(|_| crate::types::errors::TetradError::config("Invalid Content-Length"))?,
-                );
+                content_length = Some(value.trim().parse().map_err(|_| {
+                    crate::types::errors::TetradError::config("Invalid Content-Length")
+                })?);
             }
         }
 
@@ -243,7 +238,10 @@ mod tests {
         let request = transport.read_message().unwrap();
 
         assert_eq!(request.method, "initialize");
-        assert_eq!(request.id, Some(super::super::protocol::JsonRpcId::Number(1)));
+        assert_eq!(
+            request.id,
+            Some(super::super::protocol::JsonRpcId::Number(1))
+        );
     }
 
     #[test]

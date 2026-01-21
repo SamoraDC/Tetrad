@@ -86,8 +86,8 @@ pub struct ExecutorsConfig {
 impl Default for ExecutorsConfig {
     fn default() -> Self {
         Self {
-            // Codex: prompt é argumento posicional
-            codex: ExecutorConfig::new("codex", &[]),
+            // Codex: usa exec --json para modo não-interativo
+            codex: ExecutorConfig::new("codex", &["exec", "--json"]),
             // Gemini: -o json para formato de saída, prompt é posicional
             gemini: ExecutorConfig::new("gemini", &["-o", "json"]),
             // Qwen: prompt é argumento posicional

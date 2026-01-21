@@ -26,12 +26,15 @@ async fn main() -> TetradResult<()> {
     };
 
     // Inicializa logging com o nível apropriado
+    let filter = EnvFilter::from_default_env().add_directive(
+        format!("tetrad={}", log_level)
+            .parse()
+            .unwrap_or_else(|_| "tetrad=info".parse().expect("fallback directive is valid")),
+    );
+
     tracing_subscriber::registry()
         .with(fmt::layer())
-        .with(
-            EnvFilter::from_default_env()
-                .add_directive(format!("tetrad={}", log_level).parse().unwrap()),
-        )
+        .with(filter)
         .init();
 
     tracing::debug!("Configuração carregada de: {}", cli.config.display());

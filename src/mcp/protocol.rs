@@ -312,7 +312,11 @@ pub struct ToolDescription {
 
 impl ToolDescription {
     /// Cria uma nova descrição de ferramenta.
-    pub fn new(name: impl Into<String>, description: impl Into<String>, input_schema: Value) -> Self {
+    pub fn new(
+        name: impl Into<String>,
+        description: impl Into<String>,
+        input_schema: Value,
+    ) -> Self {
         Self {
             name: name.into(),
             description: description.into(),
@@ -344,9 +348,7 @@ pub struct CallToolParams {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum ToolContent {
     /// Conteúdo de texto.
-    Text {
-        text: String,
-    },
+    Text { text: String },
 }
 
 impl ToolContent {
@@ -380,7 +382,9 @@ impl ToolResult {
     /// Cria um resultado de sucesso com JSON.
     pub fn success_json(value: &Value) -> Self {
         Self {
-            content: vec![ToolContent::text(serde_json::to_string_pretty(value).unwrap_or_default())],
+            content: vec![ToolContent::text(
+                serde_json::to_string_pretty(value).unwrap_or_default(),
+            )],
             is_error: false,
         }
     }
@@ -417,8 +421,8 @@ mod tests {
 
     #[test]
     fn test_json_rpc_request_serialize() {
-        let request = JsonRpcRequest::new("test/method", Some(1.into()))
-            .with_params(json!({"key": "value"}));
+        let request =
+            JsonRpcRequest::new("test/method", Some(1.into())).with_params(json!({"key": "value"}));
 
         let json = serde_json::to_string(&request).unwrap();
         assert!(json.contains("\"jsonrpc\":\"2.0\""));
@@ -447,10 +451,8 @@ mod tests {
 
     #[test]
     fn test_json_rpc_response_error() {
-        let response = JsonRpcResponse::error(
-            Some(1.into()),
-            JsonRpcError::method_not_found("unknown"),
-        );
+        let response =
+            JsonRpcResponse::error(Some(1.into()), JsonRpcError::method_not_found("unknown"));
 
         assert!(response.is_error());
         assert!(response.result.is_none());

@@ -57,12 +57,11 @@ fn test_jsonrpc_with_params() {
 
 // Testes do protocolo MCP
 mod protocol_tests {
-    use tetrad::mcp::{
-        JsonRpcId, JsonRpcRequest, JsonRpcResponse, JsonRpcError,
-        ToolDescription, ToolResult,
-        PARSE_ERROR, INVALID_REQUEST, METHOD_NOT_FOUND, INVALID_PARAMS, INTERNAL_ERROR,
-    };
     use serde_json::json;
+    use tetrad::mcp::{
+        JsonRpcError, JsonRpcId, JsonRpcRequest, JsonRpcResponse, ToolDescription, ToolResult,
+        INTERNAL_ERROR, INVALID_PARAMS, INVALID_REQUEST, METHOD_NOT_FOUND, PARSE_ERROR,
+    };
 
     #[test]
     fn test_json_rpc_id_number() {
@@ -96,10 +95,8 @@ mod protocol_tests {
 
     #[test]
     fn test_json_rpc_response_success() {
-        let response = JsonRpcResponse::success(
-            Some(JsonRpcId::Number(1)),
-            json!({"status": "ok"})
-        );
+        let response =
+            JsonRpcResponse::success(Some(JsonRpcId::Number(1)), json!({"status": "ok"}));
 
         assert_eq!(response.jsonrpc, "2.0");
         assert!(response.error.is_none());
@@ -110,7 +107,7 @@ mod protocol_tests {
     fn test_json_rpc_response_error() {
         let response = JsonRpcResponse::error(
             Some(JsonRpcId::Number(1)),
-            JsonRpcError::method_not_found("unknown_method")
+            JsonRpcError::method_not_found("unknown_method"),
         );
 
         assert_eq!(response.jsonrpc, "2.0");
@@ -190,10 +187,10 @@ mod protocol_tests {
 
 // Testes do cache
 mod cache_tests {
-    use tetrad::cache::EvaluationCache;
-    use tetrad::types::responses::EvaluationResult;
-    use tetrad::types::requests::EvaluationType;
     use std::time::Duration;
+    use tetrad::cache::EvaluationCache;
+    use tetrad::types::requests::EvaluationType;
+    use tetrad::types::responses::EvaluationResult;
 
     fn sample_result() -> EvaluationResult {
         EvaluationResult::success("test-123", 85, "Looks good!")
@@ -204,7 +201,12 @@ mod cache_tests {
         let mut cache = EvaluationCache::new(10, Duration::from_secs(300));
         let result = sample_result();
 
-        cache.insert_by_code("fn main() {}", "rust", &EvaluationType::Code, result.clone());
+        cache.insert_by_code(
+            "fn main() {}",
+            "rust",
+            &EvaluationType::Code,
+            result.clone(),
+        );
 
         let cached = cache.get_by_code("fn main() {}", "rust", &EvaluationType::Code);
         assert!(cached.is_some());
@@ -224,7 +226,12 @@ mod cache_tests {
         let mut cache = EvaluationCache::new(10, Duration::from_secs(300));
         let result = sample_result();
 
-        cache.insert_by_code("fn main() {}", "rust", &EvaluationType::Code, result.clone());
+        cache.insert_by_code(
+            "fn main() {}",
+            "rust",
+            &EvaluationType::Code,
+            result.clone(),
+        );
 
         // Código diferente
         let cached = cache.get_by_code("fn main() { println!(); }", "rust", &EvaluationType::Code);
@@ -268,7 +275,9 @@ mod cache_tests {
 
         cache.clear();
 
-        assert!(cache.get_by_code("code1", "rust", &EvaluationType::Code).is_none());
+        assert!(cache
+            .get_by_code("code1", "rust", &EvaluationType::Code)
+            .is_none());
     }
 
     #[test]
@@ -283,7 +292,7 @@ mod cache_tests {
 
 // Testes do sistema de hooks
 mod hooks_tests {
-    use tetrad::hooks::{Hook, HookEvent, HookResult, HookContext, HookSystem, LoggingHook};
+    use tetrad::hooks::{Hook, HookContext, HookEvent, HookResult, HookSystem, LoggingHook};
     use tetrad::types::requests::EvaluationRequest;
     use tetrad::types::responses::EvaluationResult;
 
@@ -355,7 +364,10 @@ mod hooks_tests {
         let result = sample_result();
 
         let _pre = HookContext::PreEvaluate { request: &request };
-        let _post = HookContext::PostEvaluate { request: &request, result: &result };
+        let _post = HookContext::PostEvaluate {
+            request: &request,
+            result: &result,
+        };
         let _consensus = HookContext::OnConsensus { result: &result };
         let _block = HookContext::OnBlock { result: &result };
     }

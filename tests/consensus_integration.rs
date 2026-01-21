@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use tetrad::consensus::ConsensusEngine;
 use tetrad::types::config::{ConsensusConfig, ConsensusRule as ConsensusRuleConfig};
-use tetrad::types::responses::{ModelVote, Decision, Finding, Severity, Vote};
+use tetrad::types::responses::{Decision, Finding, ModelVote, Severity, Vote};
 
 fn create_vote(executor: &str, vote: Vote, score: u8) -> (String, ModelVote) {
     (executor.to_string(), ModelVote::new(executor, vote, score))
@@ -53,8 +53,10 @@ mod voting_rules_tests {
 
         let result = engine.evaluate(votes, "test-123");
         // Com golden, qualquer FAIL bloqueia
-        assert!(matches!(result.decision, Decision::Block) ||
-                matches!(result.decision, Decision::Revise));
+        assert!(
+            matches!(result.decision, Decision::Block)
+                || matches!(result.decision, Decision::Revise)
+        );
     }
 
     #[test]
@@ -106,8 +108,10 @@ mod voting_rules_tests {
 
         let result = engine.evaluate(votes, "test-123");
         // Strong com 2 PASS e 1 WARN pode passar ou pedir revisão
-        assert!(matches!(result.decision, Decision::Pass) ||
-                matches!(result.decision, Decision::Revise));
+        assert!(
+            matches!(result.decision, Decision::Pass)
+                || matches!(result.decision, Decision::Revise)
+        );
     }
 
     #[test]
@@ -320,8 +324,9 @@ mod engine_tests {
     fn test_engine_with_single_vote() {
         let config = create_config(ConsensusRuleConfig::Golden, 70, 3);
         let engine = ConsensusEngine::new(config);
-        let votes: HashMap<String, ModelVote> =
-            vec![create_vote("codex", Vote::Pass, 85)].into_iter().collect();
+        let votes: HashMap<String, ModelVote> = vec![create_vote("codex", Vote::Pass, 85)]
+            .into_iter()
+            .collect();
 
         let result = engine.evaluate(votes, "test-123");
 

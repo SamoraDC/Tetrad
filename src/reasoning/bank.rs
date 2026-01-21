@@ -258,8 +258,14 @@ impl ReasoningBank {
                     success_count: row.get(7)?,
                     failure_count: row.get(8)?,
                     confidence: row.get(9)?,
-                    last_seen: row.get::<_, String>(10)?.parse().unwrap_or_else(|_| Utc::now()),
-                    created_at: row.get::<_, String>(11)?.parse().unwrap_or_else(|_| Utc::now()),
+                    last_seen: row
+                        .get::<_, String>(10)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
+                    created_at: row
+                        .get::<_, String>(11)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
                 })
             })?
             .filter_map(|r| r.ok())
@@ -283,22 +289,31 @@ impl ReasoningBank {
         let keyword_pattern = format!("%{}%", keyword);
 
         let patterns = stmt
-            .query_map(params![language, &keyword_pattern, &keyword_pattern], |row| {
-                Ok(Pattern {
-                    id: row.get(0)?,
-                    pattern_type: PatternType::from_str(&row.get::<_, String>(1)?),
-                    code_signature: row.get(2)?,
-                    language: row.get(3)?,
-                    issue_category: row.get(4)?,
-                    description: row.get(5)?,
-                    solution: row.get(6)?,
-                    success_count: row.get(7)?,
-                    failure_count: row.get(8)?,
-                    confidence: row.get(9)?,
-                    last_seen: row.get::<_, String>(10)?.parse().unwrap_or_else(|_| Utc::now()),
-                    created_at: row.get::<_, String>(11)?.parse().unwrap_or_else(|_| Utc::now()),
-                })
-            })?
+            .query_map(
+                params![language, &keyword_pattern, &keyword_pattern],
+                |row| {
+                    Ok(Pattern {
+                        id: row.get(0)?,
+                        pattern_type: PatternType::from_str(&row.get::<_, String>(1)?),
+                        code_signature: row.get(2)?,
+                        language: row.get(3)?,
+                        issue_category: row.get(4)?,
+                        description: row.get(5)?,
+                        solution: row.get(6)?,
+                        success_count: row.get(7)?,
+                        failure_count: row.get(8)?,
+                        confidence: row.get(9)?,
+                        last_seen: row
+                            .get::<_, String>(10)?
+                            .parse()
+                            .unwrap_or_else(|_| Utc::now()),
+                        created_at: row
+                            .get::<_, String>(11)?
+                            .parse()
+                            .unwrap_or_else(|_| Utc::now()),
+                    })
+                },
+            )?
             .filter_map(|r| r.ok())
             .collect();
 
@@ -331,12 +346,7 @@ impl ReasoningBank {
         // Sucesso = consenso alcançado dentro do limite de loops permitido
         let was_successful = result.consensus_achieved && loops_to_consensus <= max_loops as u32;
 
-        let initial_score = result
-            .votes
-            .values()
-            .map(|v| v.score)
-            .min()
-            .unwrap_or(0);
+        let initial_score = result.votes.values().map(|v| v.score).min().unwrap_or(0);
 
         // Registra trajetória
         self.save_trajectory(
@@ -523,7 +533,11 @@ impl ReasoningBank {
         }
     }
 
-    fn get_top_patterns(&self, pattern_type: PatternType, limit: usize) -> TetradResult<Vec<Pattern>> {
+    fn get_top_patterns(
+        &self,
+        pattern_type: PatternType,
+        limit: usize,
+    ) -> TetradResult<Vec<Pattern>> {
         let mut stmt = self.conn.prepare(
             "SELECT id, pattern_type, code_signature, language, issue_category,
                     description, solution, success_count, failure_count, confidence,
@@ -547,8 +561,14 @@ impl ReasoningBank {
                     success_count: row.get(7)?,
                     failure_count: row.get(8)?,
                     confidence: row.get(9)?,
-                    last_seen: row.get::<_, String>(10)?.parse().unwrap_or_else(|_| Utc::now()),
-                    created_at: row.get::<_, String>(11)?.parse().unwrap_or_else(|_| Utc::now()),
+                    last_seen: row
+                        .get::<_, String>(10)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
+                    created_at: row
+                        .get::<_, String>(11)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
                 })
             })?
             .filter_map(|r| r.ok())
@@ -567,7 +587,9 @@ impl ReasoningBank {
         )?;
 
         let categories: HashMap<String, usize> = stmt
-            .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, usize>(1)?)))?
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, usize>(1)?))
+            })?
             .filter_map(|r| r.ok())
             .collect();
 
@@ -602,11 +624,14 @@ impl ReasoningBank {
     }
 
     fn get_average_loops_to_consensus(&self) -> TetradResult<f64> {
-        let avg: f64 = self.conn.query_row(
-            "SELECT AVG(loops_to_consensus) FROM trajectories WHERE was_successful = 1",
-            [],
-            |row| row.get(0),
-        ).unwrap_or(0.0);
+        let avg: f64 = self
+            .conn
+            .query_row(
+                "SELECT AVG(loops_to_consensus) FROM trajectories WHERE was_successful = 1",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap_or(0.0);
 
         Ok(avg)
     }
@@ -673,7 +698,8 @@ impl ReasoningBank {
             )?;
 
             // Remove o duplicado
-            self.conn.execute("DELETE FROM patterns WHERE id = ?", params![remove_id])?;
+            self.conn
+                .execute("DELETE FROM patterns WHERE id = ?", params![remove_id])?;
             merged += 1;
         }
 
@@ -753,8 +779,14 @@ impl ReasoningBank {
                     success_count: row.get(7)?,
                     failure_count: row.get(8)?,
                     confidence: row.get(9)?,
-                    last_seen: row.get::<_, String>(10)?.parse().unwrap_or_else(|_| Utc::now()),
-                    created_at: row.get::<_, String>(11)?.parse().unwrap_or_else(|_| Utc::now()),
+                    last_seen: row
+                        .get::<_, String>(10)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
+                    created_at: row
+                        .get::<_, String>(11)?
+                        .parse()
+                        .unwrap_or_else(|_| Utc::now()),
                 })
             })?
             .filter_map(|r| r.ok())
@@ -778,8 +810,8 @@ impl ReasoningBank {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use crate::types::responses::{Decision, Finding};
+    use std::collections::HashMap;
     use tempfile::tempdir;
 
     fn create_test_bank() -> (ReasoningBank, tempfile::TempDir) {
@@ -789,7 +821,11 @@ mod tests {
         (bank, dir)
     }
 
-    fn create_test_result(decision: Decision, score: u8, findings: Vec<Finding>) -> EvaluationResult {
+    fn create_test_result(
+        decision: Decision,
+        score: u8,
+        findings: Vec<Finding>,
+    ) -> EvaluationResult {
         EvaluationResult {
             request_id: "test-123".to_string(),
             decision,
@@ -862,7 +898,14 @@ mod tests {
         let result = create_test_result(Decision::Pass, 95, vec![]);
 
         let judgment = bank
-            .judge("test-123", "fn main() { println!(\"Hello\"); }", "rust", &result, 1, 3)
+            .judge(
+                "test-123",
+                "fn main() { println!(\"Hello\"); }",
+                "rust",
+                &result,
+                1,
+                3,
+            )
             .unwrap();
 
         assert!(judgment.was_successful);
@@ -881,10 +924,12 @@ mod tests {
         );
 
         let result = create_test_result(Decision::Block, 30, vec![finding]);
-        bank.judge("test-1", "data.unwrap()", "rust", &result, 5, 3).unwrap();
+        bank.judge("test-1", "data.unwrap()", "rust", &result, 5, 3)
+            .unwrap();
 
         let result2 = create_test_result(Decision::Pass, 95, vec![]);
-        bank.judge("test-2", "fn safe() {}", "rust", &result2, 1, 3).unwrap();
+        bank.judge("test-2", "fn safe() {}", "rust", &result2, 1, 3)
+            .unwrap();
 
         let knowledge = bank.distill();
         assert!(knowledge.total_patterns > 0);
@@ -898,8 +943,15 @@ mod tests {
         // Adiciona alguns patterns
         let result = create_test_result(Decision::Pass, 90, vec![]);
         for i in 0..5 {
-            bank.judge(&format!("test-{}", i), "fn good() {}", "rust", &result, 1, 3)
-                .unwrap();
+            bank.judge(
+                &format!("test-{}", i),
+                "fn good() {}",
+                "rust",
+                &result,
+                1,
+                3,
+            )
+            .unwrap();
         }
 
         let consolidation = bank.consolidate().unwrap();

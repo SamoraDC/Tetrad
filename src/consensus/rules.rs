@@ -43,9 +43,9 @@ impl ConsensusRule for GoldenRule {
             return Decision::Revise; // Sem votos suficientes, precisa esperar
         }
 
-        let all_pass = votes.values().all(|v| {
-            v.vote == Vote::Pass && v.score >= min_score
-        });
+        let all_pass = votes
+            .values()
+            .all(|v| v.vote == Vote::Pass && v.score >= min_score);
 
         let any_fail = votes.values().any(|v| v.vote == Vote::Fail);
 
@@ -211,7 +211,10 @@ mod tests {
     }
 
     fn create_votes(votes: Vec<(&str, Vote, u8)>) -> HashMap<String, ModelVote> {
-        votes.into_iter().map(|(n, v, s)| create_vote(n, v, s)).collect()
+        votes
+            .into_iter()
+            .map(|(n, v, s)| create_vote(n, v, s))
+            .collect()
     }
 
     // Testes para GoldenRule

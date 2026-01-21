@@ -70,21 +70,15 @@ pub async fn status(config: &Config) -> TetradResult<()> {
     // Cria executores com configuração do TOML
     let executors: Vec<(Box<dyn CliExecutor>, bool)> = vec![
         (
-            Box::new(
-                CodexExecutor::from_config(&config.executors.codex)
-            ),
+            Box::new(CodexExecutor::from_config(&config.executors.codex)),
             config.executors.codex.enabled,
         ),
         (
-            Box::new(
-                GeminiExecutor::from_config(&config.executors.gemini)
-            ),
+            Box::new(GeminiExecutor::from_config(&config.executors.gemini)),
             config.executors.gemini.enabled,
         ),
         (
-            Box::new(
-                QwenExecutor::from_config(&config.executors.qwen)
-            ),
+            Box::new(QwenExecutor::from_config(&config.executors.qwen)),
             config.executors.qwen.enabled,
         ),
     ];
@@ -175,9 +169,17 @@ pub async fn doctor(config: &Config) -> TetradResult<()> {
 
         if executor.is_available().await {
             available_count += 1;
-            println!("✓ {} está disponível (comando: {})", name, executor.command());
+            println!(
+                "✓ {} está disponível (comando: {})",
+                name,
+                executor.command()
+            );
         } else {
-            warnings.push(format!("{} não está instalado (comando esperado: {})", name, executor.command()));
+            warnings.push(format!(
+                "{} não está instalado (comando esperado: {})",
+                name,
+                executor.command()
+            ));
         }
     }
 
@@ -234,7 +236,10 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
 
     // Carrega código de arquivo se começar com @
     let (code_content, file_path_opt) = if let Some(file_path) = code.strip_prefix('@') {
-        (std::fs::read_to_string(file_path)?, Some(file_path.to_string()))
+        (
+            std::fs::read_to_string(file_path)?,
+            Some(file_path.to_string()),
+        )
     } else {
         (code.to_string(), None)
     };
@@ -381,7 +386,11 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
     println!("Score final: {}", result.score);
     println!(
         "Consenso: {}",
-        if result.consensus_achieved { "SIM" } else { "NÃO" }
+        if result.consensus_achieved {
+            "SIM"
+        } else {
+            "NÃO"
+        }
     );
 
     Ok(())

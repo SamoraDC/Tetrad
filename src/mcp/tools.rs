@@ -15,7 +15,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 use crate::cache::EvaluationCache;
 use crate::consensus::ConsensusEngine;
@@ -115,7 +115,8 @@ pub struct ToolHandler {
     gemini: GeminiExecutor,
     qwen: QwenExecutor,
     consensus: ConsensusEngine,
-    reasoning_bank: Arc<RwLock<Option<ReasoningBank>>>,
+    // Usa Mutex em vez de RwLock porque rusqlite::Connection não é Sync
+    reasoning_bank: Arc<Mutex<Option<ReasoningBank>>>,
     cache: Arc<RwLock<EvaluationCache>>,
     hooks: HookSystem,
     confirmations: Arc<RwLock<HashMap<String, bool>>>,
@@ -149,7 +150,7 @@ impl ToolHandler {
             gemini,
             qwen,
             consensus,
-            reasoning_bank: Arc::new(RwLock::new(reasoning_bank)),
+            reasoning_bank: Arc::new(Mutex::new(reasoning_bank)),
             cache: Arc::new(RwLock::new(cache)),
             hooks: HookSystem::with_defaults(),
             confirmations: Arc::new(RwLock::new(HashMap::new())),
@@ -306,8 +307,8 @@ impl ToolHandler {
             Err(e) => return ToolResult::error(format!("Invalid parameters: {}", e)),
         };
 
-        let mut request = EvaluationRequest::new(&params.plan, "text")
-            .with_type(EvaluationType::Plan);
+        let mut request =
+            EvaluationRequest::new(&params.plan, "text").with_type(EvaluationType::Plan);
 
         if let Some(ctx) = params.context {
             request = request.with_context(&ctx);
@@ -325,14 +326,16 @@ impl ToolHandler {
         // Verifica cache
         {
             let mut cache = self.cache.write().await;
-            if let Some(cached) = cache.get_by_code(&params.code, &params.language, &EvaluationType::Code) {
+            if let Some(cached) =
+                cache.get_by_code(&params.code, &params.language, &EvaluationType::Code)
+            {
                 tracing::info!("Cache hit for review_code");
                 return self.format_result(cached);
             }
         }
 
-        let mut request = EvaluationRequest::new(&params.code, &params.language)
-            .with_type(EvaluationType::Code);
+        let mut request =
+            EvaluationRequest::new(&params.code, &params.language).with_type(EvaluationType::Code);
 
         if let Some(fp) = params.file_path.clone() {
             request = request.with_file_path(&fp);
@@ -473,19 +476,28 @@ impl ToolHandler {
         let qwen_available = self.qwen.is_available().await;
 
         let codex_version = if codex_available {
-            self.codex.version().await.unwrap_or_else(|_| "unknown".to_string())
+            self.codex
+                .version()
+                .await
+                .unwrap_or_else(|_| "unknown".to_string())
         } else {
             "unavailable".to_string()
         };
 
         let gemini_version = if gemini_available {
-            self.gemini.version().await.unwrap_or_else(|_| "unknown".to_string())
+            self.gemini
+                .version()
+                .await
+                .unwrap_or_else(|_| "unknown".to_string())
         } else {
             "unavailable".to_string()
         };
 
         let qwen_version = if qwen_available {
-            self.qwen.version().await.unwrap_or_else(|_| "unknown".to_string())
+            self.qwen
+                .version()
+                .await
+                .unwrap_or_else(|_| "unknown".to_string())
         } else {
             "unavailable".to_string()
         };
@@ -545,7 +557,10 @@ impl ToolHandler {
     }
 
     /// Executa a avaliação interna.
-    async fn evaluate_internal(&self, request: EvaluationRequest) -> TetradResult<EvaluationResult> {
+    async fn evaluate_internal(
+        &self,
+        request: EvaluationRequest,
+    ) -> TetradResult<EvaluationResult> {
         // Executa hooks pre_evaluate
         let hook_result = self.hooks.run_pre_evaluate(&request).await?;
 
@@ -553,7 +568,11 @@ impl ToolHandler {
         let request = match hook_result {
             crate::hooks::HookResult::Skip => {
                 // Retorna resultado de skip
-                return Ok(EvaluationResult::success(&request.request_id, 100, "Skipped by hook"));
+                return Ok(EvaluationResult::success(
+                    &request.request_id,
+                    100,
+                    "Skipped by hook",
+                ));
             }
             crate::hooks::HookResult::ModifyRequest(modified) => {
                 // Usa a request modificada pelo hook
@@ -565,7 +584,7 @@ impl ToolHandler {
 
         // Consulta ReasoningBank
         let known_patterns = {
-            let bank = self.reasoning_bank.read().await;
+            let bank = self.reasoning_bank.lock().await;
             if let Some(ref b) = *bank {
                 b.retrieve(&request.code, &request.language)
             } else {
@@ -600,7 +619,7 @@ impl ToolHandler {
 
         // Registra no ReasoningBank
         {
-            let mut bank = self.reasoning_bank.write().await;
+            let mut bank = self.reasoning_bank.lock().await;
             if let Some(ref mut b) = *bank {
                 let _ = b.judge(
                     &result.request_id,
@@ -701,7 +720,6 @@ impl ToolHandler {
 
         ToolResult::success_json(&response)
     }
-
 }
 
 #[cfg(test)]
@@ -753,7 +771,10 @@ mod tests {
     #[test]
     fn test_tool_description() {
         let tools = ToolHandler::list_tools();
-        let review_code = tools.iter().find(|t| t.name == "tetrad_review_code").unwrap();
+        let review_code = tools
+            .iter()
+            .find(|t| t.name == "tetrad_review_code")
+            .unwrap();
 
         assert!(!review_code.description.is_empty());
 
@@ -761,6 +782,9 @@ mod tests {
         let schema = &review_code.input_schema;
         assert!(schema["properties"]["code"].is_object());
         assert!(schema["properties"]["language"].is_object());
-        assert!(schema["required"].as_array().unwrap().contains(&json!("code")));
+        assert!(schema["required"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("code")));
     }
 }

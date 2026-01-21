@@ -44,24 +44,39 @@ impl PatternMatcher {
         if code_lower.contains("sql") || code_lower.contains("query") {
             keywords.push("sql".to_string());
         }
-        if code_lower.contains("password") || code_lower.contains("secret") || code_lower.contains("credential") {
+        if code_lower.contains("password")
+            || code_lower.contains("secret")
+            || code_lower.contains("credential")
+        {
             keywords.push("credentials".to_string());
         }
         if code_lower.contains("eval") || code_lower.contains("exec") {
             keywords.push("code_execution".to_string());
         }
-        if code_lower.contains("http") || code_lower.contains("request") || code_lower.contains("fetch") {
+        if code_lower.contains("http")
+            || code_lower.contains("request")
+            || code_lower.contains("fetch")
+        {
             keywords.push("network".to_string());
         }
-        if code_lower.contains("file") || code_lower.contains("read") || code_lower.contains("write") {
+        if code_lower.contains("file")
+            || code_lower.contains("read")
+            || code_lower.contains("write")
+        {
             keywords.push("file_io".to_string());
         }
 
         // Keywords de lógica
-        if code_lower.contains("for ") || code_lower.contains("while ") || code_lower.contains("loop") {
+        if code_lower.contains("for ")
+            || code_lower.contains("while ")
+            || code_lower.contains("loop")
+        {
             keywords.push("loop".to_string());
         }
-        if code_lower.contains("unwrap") || code_lower.contains(".get(") || code_lower.contains("expect(") {
+        if code_lower.contains("unwrap")
+            || code_lower.contains(".get(")
+            || code_lower.contains("expect(")
+        {
             keywords.push("null_access".to_string());
         }
         if code_lower.contains("panic") || code_lower.contains("crash") {
@@ -73,7 +88,10 @@ impl PatternMatcher {
         if code_lower.contains("async") || code_lower.contains("await") {
             keywords.push("async".to_string());
         }
-        if code_lower.contains("mutex") || code_lower.contains("lock") || code_lower.contains("atomic") {
+        if code_lower.contains("mutex")
+            || code_lower.contains("lock")
+            || code_lower.contains("atomic")
+        {
             keywords.push("concurrency".to_string());
         }
 
@@ -180,7 +198,10 @@ impl PatternMatcher {
         let mut categories = Vec::new();
         let keywords = Self::extract_keywords(code);
 
-        if keywords.iter().any(|k| k == "sql" || k == "credentials" || k == "code_execution") {
+        if keywords
+            .iter()
+            .any(|k| k == "sql" || k == "credentials" || k == "code_execution")
+        {
             categories.push("security".to_string());
         }
 
@@ -188,7 +209,10 @@ impl PatternMatcher {
             categories.push("io".to_string());
         }
 
-        if keywords.iter().any(|k| k == "loop" || k == "null_access" || k == "panic") {
+        if keywords
+            .iter()
+            .any(|k| k == "loop" || k == "null_access" || k == "panic")
+        {
             categories.push("logic".to_string());
         }
 
@@ -196,7 +220,10 @@ impl PatternMatcher {
             categories.push("concurrency".to_string());
         }
 
-        if keywords.iter().any(|k| k == "clone" || k == "allocation" || k == "collect") {
+        if keywords
+            .iter()
+            .any(|k| k == "clone" || k == "allocation" || k == "collect")
+        {
             categories.push("performance".to_string());
         }
 
