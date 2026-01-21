@@ -206,8 +206,8 @@ impl StringTransport {
 
     /// Escreve uma resposta.
     pub fn write_response(&mut self, response: &JsonRpcResponse) -> TetradResult<()> {
-        let body = serde_json::to_string(response)
-            .map_err(crate::types::errors::TetradError::Json)?;
+        let body =
+            serde_json::to_string(response).map_err(crate::types::errors::TetradError::Json)?;
 
         let message = format!("Content-Length: {}\r\n\r\n{}", body.len(), body);
         self.output.extend_from_slice(message.as_bytes());
