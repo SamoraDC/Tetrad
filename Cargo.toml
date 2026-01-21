@@ -1,6 +1,6 @@
 [package]
 name = "tetrad"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["SamoraDC"]
 description = "MCP de Consenso Quádruplo para Claude Code - Valida código usando Codex, Gemini e Qwen"
