@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["CodexExecutor","GeminiExecutor","QwenExecutor"],"trait":["CliExecutor"]};

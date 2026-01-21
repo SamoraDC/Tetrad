@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["tetrad",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.92.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"enum\" href=\"tetrad/types/config/enum.ConsensusRule.html\" title=\"enum tetrad::types::config::ConsensusRule\">ConsensusRule</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.92.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"enum\" href=\"tetrad/types/requests/enum.EvaluationType.html\" title=\"enum tetrad::types::requests::EvaluationType\">EvaluationType</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.92.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"enum\" href=\"tetrad/types/responses/enum.Decision.html\" title=\"enum tetrad::types::responses::Decision\">Decision</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.92.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"enum\" href=\"tetrad/types/responses/enum.Severity.html\" title=\"enum tetrad::types::responses::Severity\">Severity</a>"],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.92.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"enum\" href=\"tetrad/types/responses/enum.Vote.html\" title=\"enum tetrad::types::responses::Vote\">Vote</a>"]]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[1355]}

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["cli","consensus","executors","hooks","mcp","reasoning","types"]};
