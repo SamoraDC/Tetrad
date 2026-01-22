@@ -28,14 +28,12 @@ The system implements a **quadruple consensus protocol** where no code or plan i
 ### 1. Install Tetrad
 
 ```bash
-# Via cargo (recommended)
-cargo install tetrad
+# Via npm (recommended - works seamlessly with Claude Code)
+npm install -g tetrad-mcp
 
-# Or build from source
-git clone https://github.com/SamoraDC/Tetrad.git
-cd Tetrad
-cargo build --release
-sudo cp target/release/tetrad /usr/local/bin/
+# Or via cargo (requires additional setup)
+cargo install tetrad
+sudo cp ~/.cargo/bin/tetrad /usr/local/bin/
 ```
 
 ### 2. Install External CLI Tools
@@ -73,14 +71,19 @@ tetrad doctor
 
 ```bash
 # Add Tetrad as MCP server (available in all projects)
-claude mcp add --scope user tetrad -- tetrad serve
+claude mcp add --scope user tetrad -- npx tetrad-mcp serve
 
 # Or for current project only
-claude mcp add tetrad -- tetrad serve
+claude mcp add tetrad -- npx tetrad-mcp serve
 
 # Verify it's configured
 claude mcp list
 ```
+
+> **Alternative (if installed via cargo):**
+> ```bash
+> claude mcp add --scope user tetrad -- tetrad serve
+> ```
 
 ### 5. Alternative: Manual Configuration
 
@@ -91,8 +94,8 @@ Create or edit `.mcp.json` in your project root:
   "mcpServers": {
     "tetrad": {
       "type": "stdio",
-      "command": "tetrad",
-      "args": ["serve"],
+      "command": "npx",
+      "args": ["tetrad-mcp", "serve"],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
         "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
@@ -103,15 +106,15 @@ Create or edit `.mcp.json` in your project root:
 }
 ```
 
-Or for global user configuration in `~/.config/claude-code/settings.json`:
+Or for global user configuration in `~/.claude.json` (mcpServers section):
 
 ```json
 {
   "mcpServers": {
     "tetrad": {
       "type": "stdio",
-      "command": "tetrad",
-      "args": ["serve"]
+      "command": "npx",
+      "args": ["tetrad-mcp", "serve"]
     }
   }
 }
