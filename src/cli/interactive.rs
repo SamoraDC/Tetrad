@@ -2,7 +2,7 @@
 //!
 //! Este módulo implementa a configuração interativa usando dialoguer.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 
@@ -10,7 +10,7 @@ use crate::types::config::{Config, ConsensusRule};
 use crate::TetradResult;
 
 /// Executa a configuração interativa.
-pub fn run_interactive_config(config_path: &PathBuf) -> TetradResult<()> {
+pub fn run_interactive_config(config_path: &Path) -> TetradResult<()> {
     let theme = ColorfulTheme::default();
 
     println!("\n🔧 Configuração Interativa do Tetrad\n");

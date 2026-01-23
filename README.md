@@ -1,7 +1,7 @@
 # Tetrad
 
 [![CI](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml/badge.svg)](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/tetrad.svg)](https://www.npmjs.com/package/tetrad)
+[![npm](https://img.shields.io/npm/v/@samoradc/tetrad.svg)](https://www.npmjs.com/package/@samoradc/tetrad)
 [![Crates.io](https://img.shields.io/crates/v/tetrad.svg)](https://crates.io/crates/tetrad)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -30,7 +30,7 @@ The system implements a **quadruple consensus protocol** where no code or plan i
 
 ```bash
 # Via npm (recommended - works seamlessly with Claude Code)
-npm install -g tetrad
+npm install -g @samoradc/tetrad
 
 # Or via cargo (requires additional setup)
 cargo install tetrad
@@ -40,7 +40,7 @@ sudo cp ~/.cargo/bin/tetrad /usr/local/bin/
 ### 1.1 Initialize in Your Project (Optional)
 
 ```bash
-npx tetrad init
+npx @samoradc/tetrad init
 ```
 
 This will:
@@ -83,10 +83,10 @@ tetrad doctor
 
 ```bash
 # Add Tetrad as MCP server (available in all projects)
-claude mcp add --scope user tetrad -- npx tetrad serve
+claude mcp add --scope user tetrad -- npx @samoradc/tetrad serve
 
 # Or for current project only
-claude mcp add tetrad -- npx tetrad serve
+claude mcp add tetrad -- npx @samoradc/tetrad serve
 
 # Verify it's configured
 claude mcp list
@@ -107,7 +107,7 @@ Create or edit `.mcp.json` in your project root:
     "tetrad": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tetrad", "serve"],
+      "args": ["@samoradc/tetrad", "serve"],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
         "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
@@ -126,7 +126,7 @@ Or for global user configuration in `~/.claude.json` (mcpServers section):
     "tetrad": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tetrad", "serve"]
+      "args": ["@samoradc/tetrad", "serve"]
     }
   }
 }
@@ -549,7 +549,7 @@ SamoraDC
 ---
 
 **Links:**
-- [npm](https://www.npmjs.com/package/tetrad)
+- [npm](https://www.npmjs.com/package/@samoradc/tetrad)
 - [Crates.io](https://crates.io/crates/tetrad)
 - [Documentation](https://docs.rs/tetrad)
 - [GitHub Repository](https://github.com/SamoraDC/Tetrad)

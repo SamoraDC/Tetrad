@@ -1,6 +1,6 @@
 //! Implementação dos comandos CLI do Tetrad.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::executors::{CliExecutor, CodexExecutor, GeminiExecutor, QwenExecutor};
 use crate::types::config::Config;
@@ -51,7 +51,7 @@ pub async fn init(path: Option<PathBuf>) -> TetradResult<()> {
 }
 
 /// Updates or creates .gitignore to include .tetrad/
-fn update_gitignore(target_dir: &PathBuf) -> TetradResult<()> {
+fn update_gitignore(target_dir: &Path) -> TetradResult<()> {
     let gitignore_path = target_dir.join(".gitignore");
     let tetrad_entry = ".tetrad/";
     let tetrad_comment = "# Tetrad - local database and cache";
@@ -61,7 +61,10 @@ fn update_gitignore(target_dir: &PathBuf) -> TetradResult<()> {
         let content = std::fs::read_to_string(&gitignore_path)?;
 
         // Check if it already contains .tetrad/
-        if content.lines().any(|line| line.trim() == tetrad_entry || line.trim() == ".tetrad") {
+        if content
+            .lines()
+            .any(|line| line.trim() == tetrad_entry || line.trim() == ".tetrad")
+        {
             tracing::debug!(".gitignore already contains .tetrad/");
             return Ok(());
         }
@@ -164,7 +167,7 @@ pub async fn status(config: &Config) -> TetradResult<()> {
 }
 
 /// Configura opções interativamente.
-pub async fn config_cmd(config_path: &PathBuf) -> TetradResult<()> {
+pub async fn config_cmd(config_path: &Path) -> TetradResult<()> {
     use super::interactive::{run_interactive_config, show_config_summary};
 
     // Mostra resumo antes de editar

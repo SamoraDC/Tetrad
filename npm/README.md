@@ -1,6 +1,6 @@
 # Tetrad
 
-[![npm](https://img.shields.io/npm/v/tetrad.svg)](https://www.npmjs.com/package/tetrad)
+[![npm](https://img.shields.io/npm/v/@samoradc/tetrad.svg)](https://www.npmjs.com/package/@samoradc/tetrad)
 [![CI](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml/badge.svg)](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -13,7 +13,7 @@
 ### 1. Initialize in your project
 
 ```bash
-npx tetrad init
+npx @samoradc/tetrad init
 ```
 
 This will:
@@ -25,36 +25,36 @@ This will:
 
 ```bash
 # Add as MCP server (available in all projects)
-claude mcp add --scope user tetrad -- npx tetrad serve
+claude mcp add --scope user tetrad -- npx @samoradc/tetrad serve
 
 # Or for current project only
-claude mcp add tetrad -- npx tetrad serve
+claude mcp add tetrad -- npx @samoradc/tetrad serve
 ```
 
 ### 3. Verify
 
 ```bash
 # Check version
-npx tetrad version
+npx @samoradc/tetrad version
 
 # Check CLI availability
-npx tetrad status
+npx @samoradc/tetrad status
 
 # Diagnose issues
-npx tetrad doctor
+npx @samoradc/tetrad doctor
 ```
 
 ## Commands
 
 ```bash
-npx tetrad init              # Initialize config in current directory
-npx tetrad serve             # Start MCP server (used by Claude Code)
-npx tetrad status            # Show CLI status (codex, gemini, qwen)
-npx tetrad config            # Interactive configuration
-npx tetrad doctor            # Diagnose configuration issues
-npx tetrad version           # Show version
-npx tetrad evaluate -c CODE  # Manual code evaluation (without MCP)
-npx tetrad history           # Show evaluation history from ReasoningBank
+npx @samoradc/tetrad init              # Initialize config in current directory
+npx @samoradc/tetrad serve             # Start MCP server (used by Claude Code)
+npx @samoradc/tetrad status            # Show CLI status (codex, gemini, qwen)
+npx @samoradc/tetrad config            # Interactive configuration
+npx @samoradc/tetrad doctor            # Diagnose configuration issues
+npx @samoradc/tetrad version           # Show version
+npx @samoradc/tetrad evaluate -c CODE  # Manual code evaluation (without MCP)
+npx @samoradc/tetrad history           # Show evaluation history from ReasoningBank
 ```
 
 ## Manual MCP Configuration
@@ -67,7 +67,7 @@ Add to your `.mcp.json`:
     "tetrad": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tetrad", "serve"]
+      "args": ["@samoradc/tetrad", "serve"]
     }
   }
 }
@@ -92,7 +92,7 @@ Tetrad requires at least one of these AI CLI tools:
 
 ## Configuration
 
-After `npx tetrad init`, edit `tetrad.toml`:
+After `npx @samoradc/tetrad init`, edit `tetrad.toml`:
 
 ```toml
 [general]

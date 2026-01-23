@@ -18,7 +18,7 @@ if (!fs.existsSync(binaryPath)) {
   console.error('Error: Tetrad binary not found.');
   console.error('');
   console.error('The binary should have been installed during npm install.');
-  console.error('Try reinstalling: npm install -g tetrad');
+  console.error('Try reinstalling: npm install -g @samoradc/tetrad');
   console.error('');
   console.error('Or install manually:');
   console.error('  cargo install tetrad');
