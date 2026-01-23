@@ -1,6 +1,6 @@
 {
   "name": "tetrad",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Quadruple Consensus MCP Server for Claude Code - Validates code using Codex, Gemini and Qwen",
   "keywords": [
     "mcp",
@@ -24,8 +24,7 @@
     "url": "https://github.com/SamoraDC/Tetrad/issues"
   },
   "bin": {
-    "tetrad": "./bin/tetrad.js",
-    "tetrad-mcp": "./bin/tetrad.js"
+    "tetrad": "bin/tetrad.js"
   },
   "scripts": {
     "postinstall": "node scripts/install.js"
