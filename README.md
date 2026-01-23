@@ -1,6 +1,7 @@
 # Tetrad
 
 [![CI](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml/badge.svg)](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/tetrad.svg)](https://www.npmjs.com/package/tetrad)
 [![Crates.io](https://img.shields.io/crates/v/tetrad.svg)](https://crates.io/crates/tetrad)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -29,12 +30,23 @@ The system implements a **quadruple consensus protocol** where no code or plan i
 
 ```bash
 # Via npm (recommended - works seamlessly with Claude Code)
-npm install -g tetrad-mcp
+npm install -g tetrad
 
 # Or via cargo (requires additional setup)
 cargo install tetrad
 sudo cp ~/.cargo/bin/tetrad /usr/local/bin/
 ```
+
+### 1.1 Initialize in Your Project (Optional)
+
+```bash
+npx tetrad init
+```
+
+This will:
+- Create `tetrad.toml` configuration file
+- Create `.tetrad/` directory for the database
+- Add `.tetrad/` to your `.gitignore`
 
 ### 2. Install External CLI Tools
 
@@ -71,10 +83,10 @@ tetrad doctor
 
 ```bash
 # Add Tetrad as MCP server (available in all projects)
-claude mcp add --scope user tetrad -- npx tetrad-mcp serve
+claude mcp add --scope user tetrad -- npx tetrad serve
 
 # Or for current project only
-claude mcp add tetrad -- npx tetrad-mcp serve
+claude mcp add tetrad -- npx tetrad serve
 
 # Verify it's configured
 claude mcp list
@@ -95,7 +107,7 @@ Create or edit `.mcp.json` in your project root:
     "tetrad": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tetrad-mcp", "serve"],
+      "args": ["tetrad", "serve"],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
         "GOOGLE_API_KEY": "${GOOGLE_API_KEY}",
@@ -114,7 +126,7 @@ Or for global user configuration in `~/.claude.json` (mcpServers section):
     "tetrad": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tetrad-mcp", "serve"]
+      "args": ["tetrad", "serve"]
     }
   }
 }
@@ -325,7 +337,7 @@ max_loops = 3
 
 [reasoning]
 enabled = true
-db_path = "tetrad.db"
+db_path = ".tetrad/tetrad.db"
 max_patterns_per_query = 10
 consolidation_interval = 100
 
@@ -537,6 +549,7 @@ SamoraDC
 ---
 
 **Links:**
+- [npm](https://www.npmjs.com/package/tetrad)
 - [Crates.io](https://crates.io/crates/tetrad)
 - [Documentation](https://docs.rs/tetrad)
 - [GitHub Repository](https://github.com/SamoraDC/Tetrad)

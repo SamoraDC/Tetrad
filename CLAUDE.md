@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Tetrad is a high-performance MCP (Model Context Protocol) server written in Rust that orchestrates three CLI code evaluation tools (Codex, Gemini CLI, Qwen) to validate code produced by Claude Code. It implements a quadruple consensus protocol where no code is accepted without unanimous approval from four intelligences: the three external evaluators + Claude Code itself.
 
-**Current Status**: Phases 1-5 complete. The project has a functional MCP server, consensus engine, ReasoningBank with SQLite, LRU cache, and hook system. Phase 6 (Release) is in progress - published to crates.io.
+**Current Status**: Phases 1-5 complete. The project has a functional MCP server, consensus engine, ReasoningBank with SQLite, LRU cache, and hook system. Phase 6 (Release) is in progress - published to crates.io and npm.
 
 ## Build and Development Commands
 
@@ -185,9 +185,14 @@ max_loops = 3
 
 [reasoning]
 enabled = true
-db_path = "tetrad.db"
+db_path = ".tetrad/tetrad.db"
 max_patterns_per_query = 10
 consolidation_interval = 100
+
+[cache]
+enabled = true
+capacity = 1000
+ttl_secs = 300
 ```
 
 ### Configuration Commands
@@ -255,7 +260,8 @@ tetrad/
 - **Phase 3**: Consensus + ReasoningBank ✅
 - **Phase 4**: MCP Server + Cache + Hooks ✅
 - **Phase 5**: Polish - Interactive CLI, docs, tests, CI/CD ✅
-- **Phase 6**: Release - crates.io, Homebrew, GitHub Releases 🔄
-  - [x] Published to crates.io (v0.1.1)
+- **Phase 6**: Release - crates.io, npm, Homebrew, GitHub Releases 🔄
+  - [x] Published to crates.io (v0.1.4)
+  - [x] Published to npm (v0.1.4)
   - [ ] GitHub Releases with binaries
   - [ ] Homebrew formula

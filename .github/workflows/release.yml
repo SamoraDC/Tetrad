@@ -37,7 +37,7 @@ jobs:
 
             ```bash
             # Via npm (recommended)
-            npm install -g tetrad-mcp
+            npm install -g tetrad
 
             # Via cargo
             cargo install tetrad
@@ -48,7 +48,11 @@ jobs:
             ### Claude Code Integration
 
             ```bash
-            claude mcp add --scope user tetrad -- npx tetrad-mcp serve
+            # Initialize in your project
+            npx tetrad init
+
+            # Add to Claude Code
+            claude mcp add --scope user tetrad -- npx tetrad serve
             ```
 
             ### Changelog

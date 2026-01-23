@@ -16,14 +16,17 @@ debug/
 **/mutants.out*/
 
 # ==========================
-# Tetrad - Arquivos de Runtime
+# Tetrad - Runtime Files
 # ==========================
 
-# Banco de dados SQLite (ReasoningBank)
+# Tetrad data directory (database, cache)
+.tetrad/
+
+# Legacy database file (pre v0.1.4)
 tetrad.db
 *.db
 
-# Configuração local do usuário (criada por `tetrad init`)
+# User local configuration (created by `tetrad init`)
 tetrad.toml
 
 # ==========================

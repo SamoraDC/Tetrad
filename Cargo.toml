@@ -1,9 +1,9 @@
 [package]
 name = "tetrad"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["SamoraDC"]
-description = "MCP de Consenso Quádruplo para Claude Code - Valida código usando Codex, Gemini e Qwen"
+description = "Quadruple Consensus MCP Server for Claude Code - Validates code using Codex, Gemini and Qwen"
 license = "MIT"
 repository = "https://github.com/SamoraDC/tetrad"
 homepage = "https://github.com/SamoraDC/tetrad"

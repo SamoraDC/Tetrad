@@ -238,7 +238,7 @@ impl Default for ReasoningConfig {
 }
 
 fn default_db_path() -> PathBuf {
-    PathBuf::from("tetrad.db")
+    PathBuf::from(".tetrad/tetrad.db")
 }
 
 fn default_max_patterns() -> usize {

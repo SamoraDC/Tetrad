@@ -6,35 +6,84 @@ use crate::executors::{CliExecutor, CodexExecutor, GeminiExecutor, QwenExecutor}
 use crate::types::config::Config;
 use crate::TetradResult;
 
-/// Inicializa configuração no diretório especificado.
+/// Initializes configuration in the specified directory.
 pub async fn init(path: Option<PathBuf>) -> TetradResult<()> {
     let target_dir = path.unwrap_or_else(|| PathBuf::from("."));
 
-    // Cria o diretório se não existir
+    // Create directory if it doesn't exist
     if !target_dir.exists() {
         std::fs::create_dir_all(&target_dir)?;
-        tracing::info!("Diretório criado: {}", target_dir.display());
+        tracing::info!("Directory created: {}", target_dir.display());
     }
 
     let config_path = target_dir.join("tetrad.toml");
 
     if config_path.exists() {
-        println!("Configuração já existe em: {}", config_path.display());
-        println!("Use 'tetrad config' para modificar.");
+        println!("Configuration already exists at: {}", config_path.display());
+        println!("Use 'tetrad config' to modify.");
         return Ok(());
     }
 
-    // Cria configuração padrão
+    // Create .tetrad/ directory for the database
+    let tetrad_dir = target_dir.join(".tetrad");
+    if !tetrad_dir.exists() {
+        std::fs::create_dir_all(&tetrad_dir)?;
+        tracing::info!(".tetrad/ directory created");
+    }
+
+    // Update .gitignore to ignore .tetrad/
+    update_gitignore(&target_dir)?;
+
+    // Create default configuration
     let config = Config::default_config();
     config.save(&config_path)?;
 
-    println!("Tetrad inicializado com sucesso!");
-    println!("Configuração criada em: {}", config_path.display());
+    println!("Tetrad initialized successfully!");
+    println!("Configuration created at: {}", config_path.display());
+    println!("Data directory: .tetrad/");
     println!();
-    println!("Próximos passos:");
-    println!("  1. Verifique se as CLIs estão instaladas: tetrad status");
-    println!("  2. Configure as opções: tetrad config");
-    println!("  3. Adicione ao Claude Code: claude mcp add tetrad -- tetrad serve");
+    println!("Next steps:");
+    println!("  1. Check if CLIs are installed: tetrad status");
+    println!("  2. Configure options: tetrad config");
+    println!("  3. Add to Claude Code: claude mcp add tetrad -- tetrad serve");
+
+    Ok(())
+}
+
+/// Updates or creates .gitignore to include .tetrad/
+fn update_gitignore(target_dir: &PathBuf) -> TetradResult<()> {
+    let gitignore_path = target_dir.join(".gitignore");
+    let tetrad_entry = ".tetrad/";
+    let tetrad_comment = "# Tetrad - local database and cache";
+
+    if gitignore_path.exists() {
+        // Read existing content
+        let content = std::fs::read_to_string(&gitignore_path)?;
+
+        // Check if it already contains .tetrad/
+        if content.lines().any(|line| line.trim() == tetrad_entry || line.trim() == ".tetrad") {
+            tracing::debug!(".gitignore already contains .tetrad/");
+            return Ok(());
+        }
+
+        // Append to end of file
+        let mut new_content = content.trim_end().to_string();
+        if !new_content.is_empty() {
+            new_content.push_str("\n\n");
+        }
+        new_content.push_str(tetrad_comment);
+        new_content.push('\n');
+        new_content.push_str(tetrad_entry);
+        new_content.push('\n');
+
+        std::fs::write(&gitignore_path, new_content)?;
+        println!(".gitignore updated with .tetrad/");
+    } else {
+        // Create new .gitignore
+        let content = format!("{}\n{}\n", tetrad_comment, tetrad_entry);
+        std::fs::write(&gitignore_path, content)?;
+        println!(".gitignore created with .tetrad/");
+    }
 
     Ok(())
 }
