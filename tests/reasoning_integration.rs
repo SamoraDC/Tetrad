@@ -227,8 +227,15 @@ mod utility_tests {
         let temp_dir = TempDir::new().unwrap();
         let nested_path = temp_dir.path().join("nested").join("deep").join("test.db");
 
-        // Pode falhar ou criar os diretórios - não deve causar panic
+        // Should automatically create parent directories and succeed
         let result = ReasoningBank::new(&nested_path);
-        let _ = result;
+        assert!(
+            result.is_ok(),
+            "ReasoningBank should auto-create parent directories"
+        );
+        assert!(
+            nested_path.exists(),
+            "Database file should exist after creation"
+        );
     }
 }

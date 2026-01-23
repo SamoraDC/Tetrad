@@ -128,6 +128,13 @@ pub struct ConsolidationResult {
 impl ReasoningBank {
     /// Cria ou abre o banco de patterns.
     pub fn new(db_path: &Path) -> TetradResult<Self> {
+        // Create parent directory if it doesn't exist
+        if let Some(parent) = db_path.parent() {
+            if !parent.as_os_str().is_empty() && !parent.exists() {
+                std::fs::create_dir_all(parent)?;
+            }
+        }
+
         let conn = Connection::open(db_path)?;
 
         // Cria as tabelas se não existirem
