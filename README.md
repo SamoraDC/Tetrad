@@ -82,10 +82,13 @@ tetrad doctor
 ### 4. Add to Claude Code CLI
 
 ```bash
-# Add Tetrad as MCP server (available in all projects)
+# Option 1: Auto-discovery (recommended - after MCP Registry publication)
+claude mcp add tetrad
+
+# Option 2: Manual installation (available in all projects)
 claude mcp add --scope user tetrad -- npx @samoradc/tetrad serve
 
-# Or for current project only
+# Option 3: Current project only
 claude mcp add tetrad -- npx @samoradc/tetrad serve
 
 # Verify it's configured
