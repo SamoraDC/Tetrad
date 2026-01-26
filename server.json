@@ -1,56 +1,18 @@
 {
   "$schema": "https://registry.modelcontextprotocol.io/schemas/server.json",
   "name": "io.github.samoradc/tetrad",
-  "description": "High-performance MCP server implementing quadruple consensus protocol for code validation. Orchestrates Codex, Gemini, and Qwen to ensure all code is approved by four AI intelligences before acceptance.",
+  "description": "Quadruple consensus MCP server for code validation using Codex, Gemini, and Qwen",
   "version": "0.1.11",
   "repository": {
     "type": "git",
     "url": "https://github.com/SamoraDC/Tetrad"
   },
   "license": "MIT",
-  "author": {
-    "name": "SamoraDC",
-    "url": "https://github.com/SamoraDC"
-  },
-  "packages": {
-    "npm": "@samoradc/tetrad"
-  },
-  "tools": [
+  "packages": [
     {
-      "name": "tetrad_review_plan",
-      "description": "Review implementation plans before coding using quadruple consensus"
-    },
-    {
-      "name": "tetrad_review_code",
-      "description": "Review code using quadruple consensus from Codex, Gemini, and Qwen"
-    },
-    {
-      "name": "tetrad_review_tests",
-      "description": "Review test code before finalizing"
-    },
-    {
-      "name": "tetrad_confirm",
-      "description": "Confirm that feedback from previous review was addressed"
-    },
-    {
-      "name": "tetrad_final_check",
-      "description": "Final certification check before commit"
-    },
-    {
-      "name": "tetrad_status",
-      "description": "Check health and availability of all evaluator executors"
+      "registryType": "npm",
+      "identifier": "@samoradc/tetrad",
+      "version": "0.1.11"
     }
-  ],
-  "keywords": [
-    "mcp",
-    "claude",
-    "claude-code",
-    "code-review",
-    "ai",
-    "consensus",
-    "codex",
-    "gemini",
-    "qwen",
-    "validation"
   ]
 }
