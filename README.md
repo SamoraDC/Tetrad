@@ -1,7 +1,7 @@
-
 # Tetrad
 
 [![CI](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml/badge.svg)](https://github.com/SamoraDC/Tetrad/actions/workflows/ci.yml)
+[![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://registry.modelcontextprotocol.io/)
 [![npm](https://img.shields.io/npm/v/@samoradc/tetrad.svg)](https://www.npmjs.com/package/@samoradc/tetrad)
 [![Crates.io](https://img.shields.io/crates/v/tetrad.svg)](https://crates.io/crates/tetrad)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
@@ -50,23 +50,93 @@ This will:
 - Create `.tetrad/` directory for the database
 - Add `.tetrad/` to your `.gitignore`
 
-### 2. Install External CLI Tools
+### 2. Install and Configure External CLI Tools
 
-Tetrad requires at least one of the following AI CLI tools:
+Tetrad requires at least one of the following AI CLI tools. **Good news: you don't need separate API keys if you have existing subscriptions!**
+
+#### Codex CLI (OpenAI)
 
 ```bash
-# Codex CLI (OpenAI)
 npm install -g @openai/codex
-export OPENAI_API_KEY="your-openai-key"
-
-# Gemini CLI (Google)
-npm install -g @google/gemini-cli
-export GOOGLE_API_KEY="your-google-key"
-
-# Qwen CLI (Alibaba)
-pip install dashscope
-export DASHSCOPE_API_KEY="your-dashscope-key"
 ```
+
+**Authentication options:**
+
+| Method | Requirements | API Key Needed? |
+|--------|--------------|-----------------|
+| ChatGPT Login | ChatGPT Plus, Pro, Business, Edu, or Enterprise subscription | **No** |
+| API Key | OpenAI API account with credits | Yes |
+
+```bash
+# Option 1: Login with your ChatGPT subscription (recommended)
+codex login
+# Opens browser for OAuth - follow the prompts
+
+# Option 2: Use API key
+export OPENAI_API_KEY="your-openai-key"
+```
+
+> **Note:** For headless/remote servers, use `codex login --device-auth` and follow the device code flow.
+
+📖 [Codex CLI Authentication Docs](https://developers.openai.com/codex/auth/)
+
+---
+
+#### Gemini CLI (Google)
+
+```bash
+npm install -g @google/gemini-cli
+```
+
+**Authentication options:**
+
+| Method | Requirements | API Key Needed? | Free Tier |
+|--------|--------------|-----------------|-----------|
+| Google Login | Personal Google account | **No** | 60 req/min, 1,000 req/day |
+| API Key | Google AI Studio account | Yes | Same limits |
+
+```bash
+# Option 1: Login with Google account (recommended)
+gemini auth login
+# Opens browser for OAuth - follow the prompts
+
+# Option 2: Use API key from Google AI Studio
+export GEMINI_API_KEY="your-gemini-key"
+```
+
+> **Free Tier:** With a personal Google account, you get access to Gemini 2.5 Pro with 1M token context window at no cost!
+
+📖 [Gemini CLI Authentication Docs](https://google-gemini.github.io/gemini-cli/docs/get-started/authentication.html)
+
+---
+
+#### Qwen CLI (Alibaba)
+
+```bash
+npm install -g qwen-code
+```
+
+**Authentication options:**
+
+| Method | Requirements | API Key Needed? | Free Tier |
+|--------|--------------|-----------------|-----------|
+| DashScope API | Alibaba Cloud account | Yes | 2,000 req/day |
+| Coding Plan | Qwen Coding subscription | Yes (different format) | Included |
+
+```bash
+# Get your API key from DashScope console
+export DASHSCOPE_API_KEY="your-dashscope-key"
+
+# For international users (outside China)
+export OPENAI_BASE_URL="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+```
+
+> **Regional Endpoints:**
+> - Singapore: `dashscope-intl.aliyuncs.com`
+> - Virginia: `dashscope-us.aliyuncs.com`
+> - Beijing: `dashscope.aliyuncs.com`
+
+📖 [Qwen API Docs](https://www.alibabacloud.com/help/en/model-studio/qwen-api-reference/)
 
 ### 3. Verify Installation
 
@@ -84,24 +154,28 @@ tetrad doctor
 ### 4. Add to Claude Code CLI
 
 ```bash
-# Option 1: Auto-discovery (recommended - after MCP Registry publication)
+# Recommended: Auto-discovery from MCP Registry
 claude mcp add tetrad
-
-# Option 2: Manual installation (available in all projects)
-claude mcp add --scope user tetrad -- npx @samoradc/tetrad serve
-
-# Option 3: Current project only
-claude mcp add tetrad -- npx @samoradc/tetrad serve
 
 # Verify it's configured
 claude mcp list
 ```
 
-> **Alternative (if installed via cargo):**
->
-> ```bash
-> claude mcp add --scope user tetrad -- tetrad serve
-> ```
+<details>
+<summary>Alternative installation methods</summary>
+
+```bash
+# Manual installation (all projects)
+claude mcp add --scope user tetrad -- npx @samoradc/tetrad serve
+
+# Current project only
+claude mcp add tetrad -- npx @samoradc/tetrad serve
+
+# If installed via cargo
+claude mcp add --scope user tetrad -- tetrad serve
+```
+
+</details>
 
 ### 5. Alternative: Manual Configuration
 
@@ -518,40 +592,23 @@ Inside Claude Code, run:
 
 ```
 /mcp
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```
 
 ## Prerequisites
 
-To use Tetrad, you need at least one of the AI CLIs installed:
+To use Tetrad, you need at least one of the AI CLIs installed and authenticated:
 
-- **Codex CLI**: [OpenAI Codex](https://github.com/openai/codex)
-- **Gemini CLI**: [Google Gemini](https://github.com/google-gemini/gemini-cli)
-- **Qwen CLI**: [Alibaba Qwen](https://github.com/QwenLM/Qwen)
+| CLI | Installation | Auth Without API Key? | Free Tier |
+|-----|--------------|----------------------|-----------|
+| [Codex CLI](https://github.com/openai/codex) | `npm i -g @openai/codex` | ✅ ChatGPT Plus/Pro/Business | Via subscription |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `npm i -g @google/gemini-cli` | ✅ Google account | 1,000 req/day |
+| [Qwen CLI](https://github.com/QwenLM/Qwen) | `npm i -g qwen-code` | ❌ DashScope key required | 2,000 req/day |
 
 Check availability with:
 
 ```bash
 tetrad status
+tetrad doctor
 ```
 
 ## Contributing
@@ -576,6 +633,7 @@ SamoraDC
 
 **Links:**
 
+- [MCP Registry](https://registry.modelcontextprotocol.io/)
 - [npm](https://www.npmjs.com/package/@samoradc/tetrad)
 - [Crates.io](https://crates.io/crates/tetrad)
 - [Documentation](https://docs.rs/tetrad)
