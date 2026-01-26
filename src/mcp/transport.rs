@@ -6,7 +6,7 @@
 //!
 //! ## Formato de Mensagens
 //!
-//! Segundo a especificação MCP (https://modelcontextprotocol.io/specification/2025-03-26/basic/transports):
+//! Segundo a [especificação MCP](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports):
 //! - Mensagens são delimitadas por newlines (`\n`)
 //! - Mensagens NÃO DEVEM conter newlines embutidos
 //! - Cada mensagem é um objeto JSON-RPC 2.0 completo em uma única linha
