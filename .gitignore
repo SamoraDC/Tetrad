@@ -63,3 +63,5 @@ relatorio*.md
 # Windows
 Thumbs.db
 .mcpregistry_*
+
+/docs
