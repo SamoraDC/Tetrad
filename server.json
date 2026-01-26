@@ -1,15 +1,17 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.samoradc/tetrad",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.SamoraDC/tetrad",
   "description": "Quadruple consensus MCP server for code validation using Codex, Gemini, and Qwen",
-  "version": "0.1.11",
+  "status": "active",
   "repository": {
     "url": "https://github.com/SamoraDC/Tetrad",
     "source": "github"
   },
+  "version": "0.1.11",
   "packages": [
     {
-      "registryType": "npm",
+      "registry_type": "npm",
+      "registry_base_url": "https://registry.npmjs.org",
       "identifier": "@samoradc/tetrad",
       "version": "0.1.11",
       "transport": {
