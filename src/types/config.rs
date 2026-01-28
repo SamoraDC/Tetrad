@@ -1,46 +1,46 @@
-//! Configuração do Tetrad.
+//! Configuration for Tetrad.
 
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 use crate::TetradResult;
 
-/// Configuração principal do Tetrad.
+/// Main configuration for Tetrad.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
-    /// Configurações gerais.
+    /// General settings.
     #[serde(default)]
     pub general: GeneralConfig,
 
-    /// Configurações dos executores.
+    /// Executor settings.
     #[serde(default)]
     pub executors: ExecutorsConfig,
 
-    /// Configurações de consenso.
+    /// Consensus settings.
     #[serde(default)]
     pub consensus: ConsensusConfig,
 
-    /// Configurações do ReasoningBank.
+    /// ReasoningBank settings.
     #[serde(default)]
     pub reasoning: ReasoningConfig,
 
-    /// Configurações do cache.
+    /// Cache settings.
     #[serde(default)]
     pub cache: CacheConfig,
 }
 
-/// Configurações gerais.
+/// General settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GeneralConfig {
-    /// Nível de log (trace, debug, info, warn, error).
+    /// Log level (trace, debug, info, warn, error).
     #[serde(default = "default_log_level")]
     pub log_level: String,
 
-    /// Formato de log (text, json).
+    /// Log format (text, json).
     #[serde(default = "default_log_format")]
     pub log_format: String,
 
-    /// Timeout padrão para operações (em segundos).
+    /// Default timeout for operations (in seconds).
     #[serde(default = "default_timeout")]
     pub timeout_secs: u64,
 }
@@ -67,18 +67,18 @@ fn default_timeout() -> u64 {
     60
 }
 
-/// Configurações dos executores CLI.
+/// CLI executor settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExecutorsConfig {
-    /// Configuração do Codex.
+    /// Codex configuration.
     #[serde(default)]
     pub codex: ExecutorConfig,
 
-    /// Configuração do Gemini.
+    /// Gemini configuration.
     #[serde(default)]
     pub gemini: ExecutorConfig,
 
-    /// Configuração do Qwen.
+    /// Qwen configuration.
     #[serde(default)]
     pub qwen: ExecutorConfig,
 }
@@ -96,31 +96,31 @@ impl Default for ExecutorsConfig {
     }
 }
 
-/// Configuração de um executor específico.
+/// Configuration for a specific executor.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExecutorConfig {
-    /// Habilitado.
+    /// Enabled.
     #[serde(default = "default_true")]
     pub enabled: bool,
 
-    /// Comando para executar.
+    /// Command to execute.
     pub command: String,
 
-    /// Argumentos padrão.
+    /// Default arguments.
     #[serde(default)]
     pub args: Vec<String>,
 
-    /// Timeout específico (em segundos).
+    /// Specific timeout (in seconds).
     #[serde(default = "default_executor_timeout")]
     pub timeout_secs: u64,
 
-    /// Peso no consenso (1-10).
+    /// Weight in consensus (1-10).
     #[serde(default = "default_weight")]
     pub weight: u8,
 }
 
 impl ExecutorConfig {
-    /// Cria uma nova configuração de executor.
+    /// Creates a new executor configuration.
     pub fn new(command: &str, args: &[&str]) -> Self {
         Self {
             enabled: true,
@@ -156,18 +156,18 @@ fn default_weight() -> u8 {
     5
 }
 
-/// Configurações de consenso.
+/// Consensus settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConsensusConfig {
-    /// Regra de consenso padrão.
+    /// Default consensus rule.
     #[serde(default = "default_consensus_rule")]
     pub default_rule: ConsensusRule,
 
-    /// Score mínimo para passar (0-100).
+    /// Minimum score to pass (0-100).
     #[serde(default = "default_min_score")]
     pub min_score: u8,
 
-    /// Número máximo de loops de refinamento.
+    /// Maximum number of refinement loops.
     #[serde(default = "default_max_loops")]
     pub max_loops: u8,
 }
@@ -194,34 +194,34 @@ fn default_max_loops() -> u8 {
     3
 }
 
-/// Regras de consenso disponíveis.
+/// Available consensus rules.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ConsensusRule {
-    /// Regra de Ouro: unanimidade necessária.
+    /// Golden Rule: unanimity required.
     Golden,
-    /// Consenso Fraco: 2+ votos necessários.
+    /// Weak Consensus: 2+ votes required.
     Weak,
-    /// Consenso Forte: 3/3 votos necessários.
+    /// Strong Consensus: 3/3 votes required.
     Strong,
 }
 
-/// Configurações do ReasoningBank.
+/// ReasoningBank settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReasoningConfig {
-    /// Habilitado.
+    /// Enabled.
     #[serde(default = "default_true")]
     pub enabled: bool,
 
-    /// Caminho do banco de dados SQLite.
+    /// SQLite database path.
     #[serde(default = "default_db_path")]
     pub db_path: PathBuf,
 
-    /// Número máximo de patterns por consulta.
+    /// Maximum number of patterns per query.
     #[serde(default = "default_max_patterns")]
     pub max_patterns_per_query: usize,
 
-    /// Intervalo de consolidação (a cada N avaliações).
+    /// Consolidation interval (every N evaluations).
     #[serde(default = "default_consolidation_interval")]
     pub consolidation_interval: usize,
 }
@@ -249,18 +249,18 @@ fn default_consolidation_interval() -> usize {
     100
 }
 
-/// Configurações do cache LRU.
+/// LRU cache settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheConfig {
-    /// Habilitado.
+    /// Enabled.
     #[serde(default = "default_true")]
     pub enabled: bool,
 
-    /// Capacidade máxima do cache (número de entradas).
+    /// Maximum cache capacity (number of entries).
     #[serde(default = "default_cache_capacity")]
     pub capacity: usize,
 
-    /// Tempo de vida das entradas em segundos.
+    /// Entry time to live in seconds.
     #[serde(default = "default_cache_ttl")]
     pub ttl_secs: u64,
 }
@@ -280,25 +280,25 @@ fn default_cache_capacity() -> usize {
 }
 
 fn default_cache_ttl() -> u64 {
-    300 // 5 minutos
+    300 // 5 minutes
 }
 
 impl Config {
-    /// Carrega configuração de um arquivo TOML.
+    /// Loads configuration from a TOML file.
     pub fn load<P: AsRef<Path>>(path: P) -> TetradResult<Self> {
         let content = std::fs::read_to_string(path)?;
         let config: Config = toml::from_str(&content)?;
         Ok(config)
     }
 
-    /// Salva configuração em um arquivo TOML.
+    /// Saves configuration to a TOML file.
     pub fn save<P: AsRef<Path>>(&self, path: P) -> TetradResult<()> {
         let content = toml::to_string_pretty(self)?;
         std::fs::write(path, content)?;
         Ok(())
     }
 
-    /// Cria configuração padrão.
+    /// Creates default configuration.
     pub fn default_config() -> Self {
         Self {
             general: GeneralConfig::default(),
@@ -309,7 +309,7 @@ impl Config {
         }
     }
 
-    /// Tenta carregar configuração do diretório atual ou usa padrão.
+    /// Tries to load configuration from current directory or uses default.
     pub fn load_or_default() -> Self {
         Self::load("tetrad.toml").unwrap_or_else(|_| Self::default_config())
     }

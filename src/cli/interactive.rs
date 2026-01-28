@@ -1,6 +1,6 @@
-//! Configuração interativa do Tetrad.
+//! Interactive configuration for Tetrad.
 //!
-//! Este módulo implementa a configuração interativa usando dialoguer.
+//! This module implements interactive configuration using dialoguer.
 
 use std::path::{Path, PathBuf};
 
@@ -9,34 +9,34 @@ use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use crate::types::config::{Config, ConsensusRule};
 use crate::TetradResult;
 
-/// Executa a configuração interativa.
+/// Runs interactive configuration.
 pub fn run_interactive_config(config_path: &Path) -> TetradResult<()> {
     let theme = ColorfulTheme::default();
 
-    println!("\n🔧 Configuração Interativa do Tetrad\n");
+    println!("\n🔧 Tetrad Interactive Configuration\n");
 
-    // Carrega config existente ou cria nova
+    // Load existing config or create new one
     let mut config = if config_path.exists() {
         Config::load(config_path)?
     } else {
-        println!("Criando nova configuração...\n");
+        println!("Creating new configuration...\n");
         Config::default_config()
     };
 
-    // Menu principal
+    // Main menu
     loop {
         let options = vec![
-            "Configurações Gerais",
-            "Executores (Codex, Gemini, Qwen)",
-            "Consenso",
+            "General Settings",
+            "Executors (Codex, Gemini, Qwen)",
+            "Consensus",
             "ReasoningBank",
             "Cache",
-            "Salvar e Sair",
-            "Sair sem Salvar",
+            "Save and Exit",
+            "Exit without Saving",
         ];
 
         let selection = Select::with_theme(&theme)
-            .with_prompt("O que deseja configurar?")
+            .with_prompt("What would you like to configure?")
             .items(&options)
             .default(0)
             .interact()?;
@@ -49,16 +49,16 @@ pub fn run_interactive_config(config_path: &Path) -> TetradResult<()> {
             4 => configure_cache(&theme, &mut config)?,
             5 => {
                 config.save(config_path)?;
-                println!("\n✓ Configuração salva em: {}\n", config_path.display());
+                println!("\n✓ Configuration saved to: {}\n", config_path.display());
                 break;
             }
             6 => {
                 if Confirm::with_theme(&theme)
-                    .with_prompt("Deseja realmente sair sem salvar?")
+                    .with_prompt("Are you sure you want to exit without saving?")
                     .default(false)
                     .interact()?
                 {
-                    println!("\nSaindo sem salvar.\n");
+                    println!("\nExiting without saving.\n");
                     break;
                 }
             }
@@ -69,9 +69,9 @@ pub fn run_interactive_config(config_path: &Path) -> TetradResult<()> {
     Ok(())
 }
 
-/// Configura opções gerais.
+/// Configures general options.
 fn configure_general(theme: &ColorfulTheme, config: &mut Config) -> TetradResult<()> {
-    println!("\n📋 Configurações Gerais\n");
+    println!("\n📋 General Settings\n");
 
     // Log level
     let log_levels = vec!["error", "warn", "info", "debug", "trace"];
@@ -81,7 +81,7 @@ fn configure_general(theme: &ColorfulTheme, config: &mut Config) -> TetradResult
         .unwrap_or(2);
 
     let log_level_idx = Select::with_theme(theme)
-        .with_prompt("Nível de log")
+        .with_prompt("Log level")
         .items(&log_levels)
         .default(current_idx)
         .interact()?;
@@ -96,7 +96,7 @@ fn configure_general(theme: &ColorfulTheme, config: &mut Config) -> TetradResult
         .unwrap_or(0);
 
     let log_format_idx = Select::with_theme(theme)
-        .with_prompt("Formato de log")
+        .with_prompt("Log format")
         .items(&log_formats)
         .default(current_format_idx)
         .interact()?;
@@ -105,25 +105,25 @@ fn configure_general(theme: &ColorfulTheme, config: &mut Config) -> TetradResult
 
     // Timeout
     let timeout: u64 = Input::with_theme(theme)
-        .with_prompt("Timeout geral (segundos)")
+        .with_prompt("General timeout (seconds)")
         .default(config.general.timeout_secs)
         .interact_text()?;
 
     config.general.timeout_secs = timeout;
 
-    println!("\n✓ Configurações gerais atualizadas.\n");
+    println!("\n✓ General settings updated.\n");
     Ok(())
 }
 
-/// Configura executores.
+/// Configures executors.
 fn configure_executors(theme: &ColorfulTheme, config: &mut Config) -> TetradResult<()> {
-    println!("\n🤖 Configuração dos Executores\n");
+    println!("\n🤖 Executor Configuration\n");
 
-    let executors = vec!["Codex", "Gemini", "Qwen", "Voltar"];
+    let executors = vec!["Codex", "Gemini", "Qwen", "Back"];
 
     loop {
         let selection = Select::with_theme(theme)
-            .with_prompt("Qual executor configurar?")
+            .with_prompt("Which executor to configure?")
             .items(&executors)
             .default(0)
             .interact()?;
@@ -140,28 +140,28 @@ fn configure_executors(theme: &ColorfulTheme, config: &mut Config) -> TetradResu
     Ok(())
 }
 
-/// Configura um executor específico.
+/// Configures a specific executor.
 fn configure_single_executor(
     theme: &ColorfulTheme,
     name: &str,
     executor: &mut crate::types::config::ExecutorConfig,
 ) -> TetradResult<()> {
-    println!("\n⚙️  Configurando {}\n", name);
+    println!("\n⚙️  Configuring {}\n", name);
 
-    // Habilitado
+    // Enabled
     executor.enabled = Confirm::with_theme(theme)
-        .with_prompt(format!("{} habilitado?", name))
+        .with_prompt(format!("{} enabled?", name))
         .default(executor.enabled)
         .interact()?;
 
     if !executor.enabled {
-        println!("{} desabilitado.\n", name);
+        println!("{} disabled.\n", name);
         return Ok(());
     }
 
-    // Comando
+    // Command
     let command: String = Input::with_theme(theme)
-        .with_prompt("Comando")
+        .with_prompt("Command")
         .default(executor.command.clone())
         .interact_text()?;
 
@@ -169,7 +169,7 @@ fn configure_single_executor(
 
     // Args
     let args_str: String = Input::with_theme(theme)
-        .with_prompt("Argumentos (separados por espaço)")
+        .with_prompt("Arguments (space separated)")
         .default(executor.args.join(" "))
         .interact_text()?;
 
@@ -177,7 +177,7 @@ fn configure_single_executor(
 
     // Timeout
     let timeout: u64 = Input::with_theme(theme)
-        .with_prompt("Timeout (segundos)")
+        .with_prompt("Timeout (seconds)")
         .default(executor.timeout_secs)
         .interact_text()?;
 
@@ -185,25 +185,25 @@ fn configure_single_executor(
 
     // Weight
     let weight: u8 = Input::with_theme(theme)
-        .with_prompt("Peso no consenso (1-10)")
+        .with_prompt("Consensus weight (1-10)")
         .default(executor.weight)
         .interact_text()?;
 
     executor.weight = weight.clamp(1, 10);
 
-    println!("\n✓ {} configurado.\n", name);
+    println!("\n✓ {} configured.\n", name);
     Ok(())
 }
 
-/// Configura consenso.
+/// Configures consensus.
 fn configure_consensus(theme: &ColorfulTheme, config: &mut Config) -> TetradResult<()> {
-    println!("\n🤝 Configuração de Consenso\n");
+    println!("\n🤝 Consensus Configuration\n");
 
-    // Regra padrão
+    // Default rule
     let rules = vec![
-        "Golden (unanimidade)",
-        "Strong (3/3 ou 2/3 com alta confiança)",
-        "Weak (maioria simples)",
+        "Golden (unanimity)",
+        "Strong (3/3 or 2/3 with high confidence)",
+        "Weak (simple majority)",
     ];
 
     let current_idx = match config.consensus.default_rule {
@@ -213,7 +213,7 @@ fn configure_consensus(theme: &ColorfulTheme, config: &mut Config) -> TetradResu
     };
 
     let rule_idx = Select::with_theme(theme)
-        .with_prompt("Regra de consenso padrão")
+        .with_prompt("Default consensus rule")
         .items(&rules)
         .default(current_idx)
         .interact()?;
@@ -224,9 +224,9 @@ fn configure_consensus(theme: &ColorfulTheme, config: &mut Config) -> TetradResu
         _ => ConsensusRule::Weak,
     };
 
-    // Score mínimo
+    // Minimum score
     let min_score: u8 = Input::with_theme(theme)
-        .with_prompt("Score mínimo para aprovação (0-100)")
+        .with_prompt("Minimum score for approval (0-100)")
         .default(config.consensus.min_score)
         .interact_text()?;
 
@@ -234,77 +234,77 @@ fn configure_consensus(theme: &ColorfulTheme, config: &mut Config) -> TetradResu
 
     // Max loops
     let max_loops: u8 = Input::with_theme(theme)
-        .with_prompt("Número máximo de loops de refinamento")
+        .with_prompt("Maximum number of refinement loops")
         .default(config.consensus.max_loops)
         .interact_text()?;
 
     config.consensus.max_loops = max_loops;
 
-    println!("\n✓ Consenso configurado.\n");
+    println!("\n✓ Consensus configured.\n");
     Ok(())
 }
 
-/// Configura ReasoningBank.
+/// Configures ReasoningBank.
 fn configure_reasoning(theme: &ColorfulTheme, config: &mut Config) -> TetradResult<()> {
-    println!("\n🧠 Configuração do ReasoningBank\n");
+    println!("\n🧠 ReasoningBank Configuration\n");
 
-    // Habilitado
+    // Enabled
     config.reasoning.enabled = Confirm::with_theme(theme)
-        .with_prompt("ReasoningBank habilitado?")
+        .with_prompt("ReasoningBank enabled?")
         .default(config.reasoning.enabled)
         .interact()?;
 
     if !config.reasoning.enabled {
-        println!("ReasoningBank desabilitado.\n");
+        println!("ReasoningBank disabled.\n");
         return Ok(());
     }
 
-    // Caminho do banco
+    // Database path
     let db_path: String = Input::with_theme(theme)
-        .with_prompt("Caminho do banco de dados")
+        .with_prompt("Database path")
         .default(config.reasoning.db_path.display().to_string())
         .interact_text()?;
 
     config.reasoning.db_path = PathBuf::from(db_path);
 
-    // Max patterns por query
+    // Max patterns per query
     let max_patterns: usize = Input::with_theme(theme)
-        .with_prompt("Máximo de patterns por consulta")
+        .with_prompt("Maximum patterns per query")
         .default(config.reasoning.max_patterns_per_query)
         .interact_text()?;
 
     config.reasoning.max_patterns_per_query = max_patterns;
 
-    // Intervalo de consolidação
+    // Consolidation interval
     let consolidation_interval: usize = Input::with_theme(theme)
-        .with_prompt("Intervalo de consolidação (avaliações)")
+        .with_prompt("Consolidation interval (evaluations)")
         .default(config.reasoning.consolidation_interval)
         .interact_text()?;
 
     config.reasoning.consolidation_interval = consolidation_interval;
 
-    println!("\n✓ ReasoningBank configurado.\n");
+    println!("\n✓ ReasoningBank configured.\n");
     Ok(())
 }
 
-/// Configura cache.
+/// Configures cache.
 fn configure_cache(theme: &ColorfulTheme, config: &mut Config) -> TetradResult<()> {
-    println!("\n💾 Configuração do Cache\n");
+    println!("\n💾 Cache Configuration\n");
 
-    // Habilitado
+    // Enabled
     config.cache.enabled = Confirm::with_theme(theme)
-        .with_prompt("Cache habilitado?")
+        .with_prompt("Cache enabled?")
         .default(config.cache.enabled)
         .interact()?;
 
     if !config.cache.enabled {
-        println!("Cache desabilitado.\n");
+        println!("Cache disabled.\n");
         return Ok(());
     }
 
-    // Capacidade
+    // Capacity
     let capacity: usize = Input::with_theme(theme)
-        .with_prompt("Capacidade máxima (número de entradas)")
+        .with_prompt("Maximum capacity (number of entries)")
         .default(config.cache.capacity)
         .interact_text()?;
 
@@ -312,26 +312,26 @@ fn configure_cache(theme: &ColorfulTheme, config: &mut Config) -> TetradResult<(
 
     // TTL
     let ttl: u64 = Input::with_theme(theme)
-        .with_prompt("Tempo de vida (segundos)")
+        .with_prompt("Time to live (seconds)")
         .default(config.cache.ttl_secs)
         .interact_text()?;
 
     config.cache.ttl_secs = ttl;
 
-    println!("\n✓ Cache configurado.\n");
+    println!("\n✓ Cache configured.\n");
     Ok(())
 }
 
-/// Mostra resumo da configuração.
+/// Shows configuration summary.
 pub fn show_config_summary(config: &Config) {
-    println!("\n📊 Resumo da Configuração\n");
+    println!("\n📊 Configuration Summary\n");
     println!("┌─────────────────────────────────────────┐");
-    println!("│ Geral                                   │");
+    println!("│ General                                 │");
     println!("├─────────────────────────────────────────┤");
     println!("│ Log level: {:<28} │", config.general.log_level);
     println!("│ Timeout: {:<29}s │", config.general.timeout_secs);
     println!("├─────────────────────────────────────────┤");
-    println!("│ Executores                              │");
+    println!("│ Executors                               │");
     println!("├─────────────────────────────────────────┤");
     println!(
         "│ Codex:  {} ({:<26}) │",
@@ -361,40 +361,40 @@ pub fn show_config_summary(config: &Config) {
         config.executors.qwen.command
     );
     println!("├─────────────────────────────────────────┤");
-    println!("│ Consenso                                │");
+    println!("│ Consensus                               │");
     println!("├─────────────────────────────────────────┤");
     println!(
-        "│ Regra: {:<32} │",
+        "│ Rule: {:<33} │",
         format!("{:?}", config.consensus.default_rule)
     );
-    println!("│ Score mínimo: {:<25} │", config.consensus.min_score);
+    println!("│ Min score: {:<28} │", config.consensus.min_score);
     println!("│ Max loops: {:<28} │", config.consensus.max_loops);
     println!("├─────────────────────────────────────────┤");
     println!("│ ReasoningBank                           │");
     println!("├─────────────────────────────────────────┤");
     println!(
-        "│ Habilitado: {:<27} │",
+        "│ Enabled: {:<30} │",
         if config.reasoning.enabled {
-            "Sim"
+            "Yes"
         } else {
-            "Não"
+            "No"
         }
     );
     if config.reasoning.enabled {
         println!(
-            "│ Consolidação: a cada {:<17} │",
-            format!("{} avaliações", config.reasoning.consolidation_interval)
+            "│ Consolidation: every {:<17} │",
+            format!("{} evaluations", config.reasoning.consolidation_interval)
         );
     }
     println!("├─────────────────────────────────────────┤");
     println!("│ Cache                                   │");
     println!("├─────────────────────────────────────────┤");
     println!(
-        "│ Habilitado: {:<27} │",
-        if config.cache.enabled { "Sim" } else { "Não" }
+        "│ Enabled: {:<30} │",
+        if config.cache.enabled { "Yes" } else { "No" }
     );
     if config.cache.enabled {
-        println!("│ Capacidade: {:<27} │", config.cache.capacity);
+        println!("│ Capacity: {:<29} │", config.cache.capacity);
         println!("│ TTL: {:<33}s │", config.cache.ttl_secs);
     }
     println!("└─────────────────────────────────────────┘");
@@ -408,7 +408,7 @@ mod tests {
     #[test]
     fn test_show_config_summary() {
         let config = Config::default_config();
-        // Apenas verifica que não causa panic
+        // Just verify it doesn't panic
         show_config_summary(&config);
     }
 }

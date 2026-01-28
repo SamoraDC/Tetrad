@@ -1,4 +1,4 @@
-//! Implementação dos comandos CLI do Tetrad.
+//! CLI commands implementation for Tetrad.
 
 use std::path::{Path, PathBuf};
 
@@ -91,35 +91,35 @@ fn update_gitignore(target_dir: &Path) -> TetradResult<()> {
     Ok(())
 }
 
-/// Inicia o servidor MCP.
+/// Starts the MCP server.
 pub async fn serve(port: Option<u16>, config: &Config) -> TetradResult<()> {
     use crate::mcp::McpServer;
 
     tracing::debug!(
-        "Configuração carregada: timeout={}s, consenso={:?}",
+        "Configuration loaded: timeout={}s, consensus={:?}",
         config.general.timeout_secs,
         config.consensus.default_rule
     );
 
     if let Some(p) = port {
-        // HTTP transport ainda não implementado
-        tracing::warn!("HTTP transport na porta {} ainda não implementado", p);
-        eprintln!("Aviso: HTTP transport ainda não suportado. Use stdio (sem --port).");
+        // HTTP transport not yet implemented
+        tracing::warn!("HTTP transport on port {} not yet implemented", p);
+        eprintln!("Warning: HTTP transport not yet supported. Use stdio (without --port).");
         return Ok(());
     }
 
-    // Inicia servidor MCP via stdio
-    tracing::info!("Iniciando servidor MCP Tetrad via stdio...");
+    // Start MCP server via stdio
+    tracing::info!("Starting Tetrad MCP server via stdio...");
 
     let mut server = McpServer::new(config.clone())?;
     server.run().await
 }
 
-/// Mostra status das CLIs.
+/// Shows CLI status.
 pub async fn status(config: &Config) -> TetradResult<()> {
-    println!("Verificando status dos executores...\n");
+    println!("Checking executor status...\n");
 
-    // Cria executores com configuração do TOML
+    // Create executors with TOML configuration
     let executors: Vec<(Box<dyn CliExecutor>, bool)> = vec![
         (
             Box::new(CodexExecutor::from_config(&config.executors.codex)),
@@ -139,38 +139,38 @@ pub async fn status(config: &Config) -> TetradResult<()> {
         let name = executor.name();
 
         if !enabled {
-            println!("  ○ {} - desabilitado", name);
+            println!("  ○ {} - disabled", name);
             continue;
         }
 
         let available = executor.is_available().await;
         let status_icon = if available { "✓" } else { "✗" };
         let status_text = if available {
-            "disponível"
+            "available"
         } else {
-            "não encontrado"
+            "not found"
         };
 
         println!("  {} {} - {}", status_icon, name, status_text);
 
         if available {
             if let Ok(version) = executor.version().await {
-                println!("      versão: {}", version);
+                println!("      version: {}", version);
             }
         }
     }
 
     println!();
-    println!("Dica: Instale as CLIs faltantes para habilitar o consenso completo.");
+    println!("Tip: Install missing CLIs to enable full consensus.");
 
     Ok(())
 }
 
-/// Configura opções interativamente.
+/// Configures options interactively.
 pub async fn config_cmd(config_path: &Path) -> TetradResult<()> {
     use super::interactive::{run_interactive_config, show_config_summary};
 
-    // Mostra resumo antes de editar
+    // Show summary before editing
     if config_path.exists() {
         let config = Config::load(config_path)?;
         show_config_summary(&config);
@@ -180,16 +180,16 @@ pub async fn config_cmd(config_path: &Path) -> TetradResult<()> {
     run_interactive_config(config_path)
 }
 
-/// Diagnostica problemas de configuração.
+/// Diagnoses configuration issues.
 pub async fn doctor(config: &Config) -> TetradResult<()> {
-    println!("Diagnosticando configuração do Tetrad...\n");
+    println!("Diagnosing Tetrad configuration...\n");
 
     let mut issues: Vec<String> = Vec::new();
     let mut warnings: Vec<String> = Vec::new();
 
-    println!("✓ Configuração carregada");
+    println!("✓ Configuration loaded");
 
-    // Cria executores com configuração do TOML
+    // Create executors with TOML configuration
     let executors: Vec<(Box<dyn CliExecutor>, bool, &str)> = vec![
         (
             Box::new(CodexExecutor::from_config(&config.executors.codex)),
@@ -213,7 +213,7 @@ pub async fn doctor(config: &Config) -> TetradResult<()> {
 
     for (executor, enabled, name) in executors {
         if !enabled {
-            println!("○ {} está desabilitado no config", name);
+            println!("○ {} is disabled in config", name);
             continue;
         }
 
@@ -222,13 +222,13 @@ pub async fn doctor(config: &Config) -> TetradResult<()> {
         if executor.is_available().await {
             available_count += 1;
             println!(
-                "✓ {} está disponível (comando: {})",
+                "✓ {} is available (command: {})",
                 name,
                 executor.command()
             );
         } else {
             warnings.push(format!(
-                "{} não está instalado (comando esperado: {})",
+                "{} is not installed (expected command: {})",
                 name,
                 executor.command()
             ));
@@ -236,29 +236,29 @@ pub async fn doctor(config: &Config) -> TetradResult<()> {
     }
 
     if enabled_count == 0 {
-        issues.push("Nenhum executor habilitado no config - consenso não é possível".to_string());
+        issues.push("No executor enabled in config - consensus is not possible".to_string());
     } else if available_count == 0 {
-        issues.push("Nenhum executor disponível - consenso não é possível".to_string());
+        issues.push("No executor available - consensus is not possible".to_string());
     } else if available_count < enabled_count {
         warnings.push(format!(
-            "Apenas {}/{} executores habilitados estão disponíveis",
+            "Only {}/{} enabled executors are available",
             available_count, enabled_count
         ));
     }
 
-    // Resumo
+    // Summary
     println!();
     if issues.is_empty() && warnings.is_empty() {
-        println!("✓ Tudo OK! Tetrad está pronto para uso.");
+        println!("✓ All OK! Tetrad is ready to use.");
     } else {
         if !warnings.is_empty() {
-            println!("Avisos:");
+            println!("Warnings:");
             for warning in warnings {
                 println!("  ⚠ {}", warning);
             }
         }
         if !issues.is_empty() {
-            println!("Problemas:");
+            println!("Issues:");
             for issue in issues {
                 println!("  ✗ {}", issue);
             }
@@ -268,15 +268,15 @@ pub async fn doctor(config: &Config) -> TetradResult<()> {
     Ok(())
 }
 
-/// Mostra versão.
+/// Shows version.
 pub fn version() {
     println!("tetrad {}", env!("CARGO_PKG_VERSION"));
     println!();
-    println!("MCP de Consenso Quádruplo para Claude Code");
+    println!("Quadruple Consensus MCP for Claude Code");
     println!("https://github.com/SamoraDC/tetrad");
 }
 
-/// Avalia código manualmente (sem MCP).
+/// Evaluates code manually (without MCP).
 pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResult<()> {
     use crate::consensus::ConsensusEngine;
     use crate::reasoning::{PatternMatcher, ReasoningBank};
@@ -284,9 +284,9 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
     use crate::types::responses::ModelVote;
     use std::collections::HashMap;
 
-    println!("Avaliando código...\n");
+    println!("Evaluating code...\n");
 
-    // Carrega código de arquivo se começar com @
+    // Load code from file if starts with @
     let (code_content, file_path_opt) = if let Some(file_path) = code.strip_prefix('@') {
         (
             std::fs::read_to_string(file_path)?,
@@ -296,34 +296,34 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
         (code.to_string(), None)
     };
 
-    // Detecta linguagem se for "auto"
+    // Detect language if "auto"
     let detected_language = if language == "auto" {
         PatternMatcher::detect_language(&code_content)
     } else {
         language.to_string()
     };
-    println!("Linguagem: {}", detected_language);
+    println!("Language: {}", detected_language);
 
-    // Usa configuração do ReasoningBank
+    // Use ReasoningBank configuration
     let db_path = &config.reasoning.db_path;
 
-    // Cria diretório do banco se não existir
+    // Create database directory if it doesn't exist
     if let Some(parent) = db_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
 
-    // Abre o ReasoningBank se habilitado
+    // Open ReasoningBank if enabled
     let mut bank = if config.reasoning.enabled {
         ReasoningBank::new_with_config(db_path, &config.reasoning).ok()
     } else {
         None
     };
 
-    // RETRIEVE - Busca patterns similares
+    // RETRIEVE - Search for similar patterns
     if let Some(ref b) = bank {
         let matches = b.retrieve(&code_content, &detected_language);
         if !matches.is_empty() {
-            println!("\nPatterns encontrados no ReasoningBank:");
+            println!("\nPatterns found in ReasoningBank:");
             for m in &matches {
                 let icon = match m.pattern.pattern_type {
                     crate::reasoning::PatternType::AntiPattern => "⚠",
@@ -331,7 +331,7 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
                     crate::reasoning::PatternType::Ambiguous => "?",
                 };
                 println!(
-                    "  {} {} - {} (confiança: {:.0}%)",
+                    "  {} {} - {} (confidence: {:.0}%)",
                     icon,
                     m.pattern.issue_category,
                     m.pattern.description,
@@ -361,16 +361,16 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
         file_path: file_path_opt,
     };
 
-    println!("\nExecutando avaliadores...");
+    println!("\nRunning evaluators...");
 
     for executor in executors {
         let name = executor.name();
         if !executor.is_available().await {
-            println!("  {} - não disponível, pulando", name);
+            println!("  {} - not available, skipping", name);
             continue;
         }
 
-        print!("  {} - avaliando... ", name);
+        print!("  {} - evaluating... ", name);
 
         match executor.evaluate(&request).await {
             Ok(vote) => {
@@ -378,13 +378,13 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
                 votes.insert(name.to_string(), vote);
             }
             Err(e) => {
-                println!("erro: {}", e);
+                println!("error: {}", e);
             }
         }
     }
 
     if votes.is_empty() {
-        println!("\nNenhum avaliador disponível. Instale pelo menos uma CLI.");
+        println!("\nNo evaluator available. Install at least one CLI.");
         return Ok(());
     }
 
@@ -392,9 +392,9 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
     let engine = ConsensusEngine::new(config.consensus.clone());
     let result = engine.evaluate(votes, &request_id);
 
-    // JUDGE - Registra resultado no ReasoningBank
+    // JUDGE - Register result in ReasoningBank
     if let Some(ref mut b) = bank {
-        let loops_to_consensus = 1; // CLI executa apenas 1 loop
+        let loops_to_consensus = 1; // CLI runs only 1 loop
         match b.judge(
             &request_id,
             &code_content,
@@ -406,23 +406,23 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
             Ok(judgment) => {
                 if judgment.new_patterns_created > 0 || judgment.patterns_updated > 0 {
                     println!(
-                        "\nReasoningBank: {} patterns novos, {} atualizados",
+                        "\nReasoningBank: {} new patterns, {} updated",
                         judgment.new_patterns_created, judgment.patterns_updated
                     );
                 }
             }
             Err(e) => {
-                tracing::warn!("Erro ao registrar no ReasoningBank: {}", e);
+                tracing::warn!("Error registering in ReasoningBank: {}", e);
             }
         }
 
-        // CONSOLIDATE - Verifica se é hora de consolidar
+        // CONSOLIDATE - Check if it's time to consolidate
         if let Ok(eval_count) = b.count_trajectories() {
             if eval_count > 0 && eval_count % config.reasoning.consolidation_interval == 0 {
                 if let Ok(consolidation) = b.consolidate() {
                     if consolidation.patterns_merged > 0 || consolidation.patterns_pruned > 0 {
                         println!(
-                            "ReasoningBank consolidado: {} merged, {} pruned",
+                            "ReasoningBank consolidated: {} merged, {} pruned",
                             consolidation.patterns_merged, consolidation.patterns_pruned
                         );
                     }
@@ -431,48 +431,48 @@ pub async fn evaluate(code: &str, language: &str, config: &Config) -> TetradResu
         }
     }
 
-    // Mostra resultado
+    // Show result
     println!("\n{}", "=".repeat(50));
     println!("{}", result.feedback);
 
-    println!("Score final: {}", result.score);
+    println!("Final score: {}", result.score);
     println!(
-        "Consenso: {}",
+        "Consensus: {}",
         if result.consensus_achieved {
-            "SIM"
+            "YES"
         } else {
-            "NÃO"
+            "NO"
         }
     );
 
     Ok(())
 }
 
-/// Mostra histórico de avaliações do ReasoningBank.
+/// Shows evaluation history from ReasoningBank.
 pub async fn history(limit: usize, config: &Config) -> TetradResult<()> {
     use crate::reasoning::ReasoningBank;
 
     if !config.reasoning.enabled {
-        println!("ReasoningBank está desabilitado na configuração.");
+        println!("ReasoningBank is disabled in configuration.");
         return Ok(());
     }
 
     let db_path = &config.reasoning.db_path;
 
     if !db_path.exists() {
-        println!("ReasoningBank ainda não foi criado.");
-        println!("Execute 'tetrad evaluate' para começar a coletar dados.");
+        println!("ReasoningBank has not been created yet.");
+        println!("Run 'tetrad evaluate' to start collecting data.");
         return Ok(());
     }
 
     let bank = ReasoningBank::new_with_config(db_path, &config.reasoning)?;
     let knowledge = bank.distill();
 
-    println!("ReasoningBank - Conhecimento Destilado\n");
-    println!("Total de patterns: {}", knowledge.total_patterns);
-    println!("Total de trajetórias: {}", knowledge.total_trajectories);
+    println!("ReasoningBank - Distilled Knowledge\n");
+    println!("Total patterns: {}", knowledge.total_patterns);
+    println!("Total trajectories: {}", knowledge.total_trajectories);
     println!(
-        "Média de loops para consenso: {:.2}",
+        "Average loops to consensus: {:.2}",
         knowledge.avg_loops_to_consensus
     );
 
@@ -480,7 +480,7 @@ pub async fn history(limit: usize, config: &Config) -> TetradResult<()> {
         println!("\nTop Anti-patterns:");
         for (i, pattern) in knowledge.top_antipatterns.iter().take(limit).enumerate() {
             println!(
-                "  {}. {} ({}) - {} falhas, {:.0}% confiança",
+                "  {}. {} ({}) - {} failures, {:.0}% confidence",
                 i + 1,
                 pattern.issue_category,
                 pattern.language,
@@ -494,7 +494,7 @@ pub async fn history(limit: usize, config: &Config) -> TetradResult<()> {
         println!("\nTop Good Patterns:");
         for (i, pattern) in knowledge.top_good_patterns.iter().take(limit).enumerate() {
             println!(
-                "  {}. {} ({}) - {} sucessos, {:.0}% confiança",
+                "  {}. {} ({}) - {} successes, {:.0}% confidence",
                 i + 1,
                 pattern.issue_category,
                 pattern.language,
@@ -505,10 +505,10 @@ pub async fn history(limit: usize, config: &Config) -> TetradResult<()> {
     }
 
     if !knowledge.language_stats.is_empty() {
-        println!("\nEstatísticas por linguagem:");
+        println!("\nStatistics by language:");
         for (lang, stats) in &knowledge.language_stats {
             println!(
-                "  {}: {} avaliações, {:.0}% sucesso, score médio {:.1}",
+                "  {}: {} evaluations, {:.0}% success, avg score {:.1}",
                 lang,
                 stats.total_evaluations,
                 stats.success_rate * 100.0,
@@ -520,48 +520,48 @@ pub async fn history(limit: usize, config: &Config) -> TetradResult<()> {
     Ok(())
 }
 
-/// Exporta patterns do ReasoningBank.
+/// Exports patterns from ReasoningBank.
 pub async fn export_patterns(output: &std::path::Path, config: &Config) -> TetradResult<()> {
     use crate::reasoning::ReasoningBank;
 
     if !config.reasoning.enabled {
-        println!("ReasoningBank está desabilitado na configuração.");
+        println!("ReasoningBank is disabled in configuration.");
         return Ok(());
     }
 
     let db_path = &config.reasoning.db_path;
 
     if !db_path.exists() {
-        println!("ReasoningBank ainda não foi criado.");
-        println!("Nenhum pattern para exportar.");
+        println!("ReasoningBank has not been created yet.");
+        println!("No patterns to export.");
         return Ok(());
     }
 
     let bank = ReasoningBank::new_with_config(db_path, &config.reasoning)?;
     bank.export(output)?;
 
-    println!("Patterns exportados para: {}", output.display());
+    println!("Patterns exported to: {}", output.display());
 
     Ok(())
 }
 
-/// Importa patterns para o ReasoningBank.
+/// Imports patterns into ReasoningBank.
 pub async fn import_patterns(input: &std::path::Path, config: &Config) -> TetradResult<()> {
     use crate::reasoning::ReasoningBank;
 
     if !config.reasoning.enabled {
-        println!("ReasoningBank está desabilitado na configuração.");
+        println!("ReasoningBank is disabled in configuration.");
         return Ok(());
     }
 
     if !input.exists() {
-        println!("Arquivo não encontrado: {}", input.display());
+        println!("File not found: {}", input.display());
         return Ok(());
     }
 
     let db_path = &config.reasoning.db_path;
 
-    // Cria diretório se não existir
+    // Create directory if it doesn't exist
     if let Some(parent) = db_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
@@ -569,10 +569,10 @@ pub async fn import_patterns(input: &std::path::Path, config: &Config) -> Tetrad
     let mut bank = ReasoningBank::new_with_config(db_path, &config.reasoning)?;
     let result = bank.import(input)?;
 
-    println!("Importação concluída:");
-    println!("  Patterns importados: {}", result.imported);
-    println!("  Patterns ignorados (já existentes): {}", result.skipped);
-    println!("  Patterns mesclados: {}", result.merged);
+    println!("Import completed:");
+    println!("  Patterns imported: {}", result.imported);
+    println!("  Patterns skipped (already exist): {}", result.skipped);
+    println!("  Patterns merged: {}", result.merged);
 
     Ok(())
 }
@@ -583,13 +583,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_version() {
-        // Apenas verifica que não causa panic
+        // Just verify it doesn't panic
         version();
     }
 
     #[tokio::test]
     async fn test_status() {
-        // Verifica que status roda sem erros
+        // Verify status runs without errors
         let config = Config::default_config();
         let result = status(&config).await;
         assert!(result.is_ok());
@@ -597,7 +597,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_doctor() {
-        // Verifica que doctor roda sem erros
+        // Verify doctor runs without errors
         let config = Config::default_config();
         let result = doctor(&config).await;
         assert!(result.is_ok());

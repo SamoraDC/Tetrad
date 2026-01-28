@@ -1,57 +1,57 @@
-//! Tipos de erro do Tetrad.
+//! Error types for Tetrad.
 
 use thiserror::Error;
 
-/// Tipo de resultado padrão do Tetrad.
+/// Default result type for Tetrad.
 pub type TetradResult<T> = Result<T, TetradError>;
 
-/// Erros possíveis no Tetrad.
+/// Possible errors in Tetrad.
 #[derive(Error, Debug)]
 pub enum TetradError {
     #[cfg(feature = "sqlite")]
-    #[error("Erro no SQLite: {0}")]
+    #[error("SQLite error: {0}")]
     Sqlite(#[from] rusqlite::Error),
-    #[error("Erro de configuração: {0}")]
+    #[error("Configuration error: {0}")]
     Config(String),
 
-    #[error("Erro de IO: {0}")]
+    #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("Erro ao parsear TOML: {0}")]
+    #[error("TOML parse error: {0}")]
     TomlParse(#[from] toml::de::Error),
 
-    #[error("Erro ao serializar TOML: {0}")]
+    #[error("TOML serialize error: {0}")]
     TomlSerialize(#[from] toml::ser::Error),
 
-    #[error("Erro de JSON: {0}")]
+    #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 
-    #[error("Executor '{0}' não encontrado ou não disponível")]
+    #[error("Executor '{0}' not found or not available")]
     ExecutorNotFound(String),
 
-    #[error("Executor '{0}' falhou: {1}")]
+    #[error("Executor '{0}' failed: {1}")]
     ExecutorFailed(String, String),
 
-    #[error("Timeout ao executar '{0}'")]
+    #[error("Timeout executing '{0}'")]
     ExecutorTimeout(String),
 
-    #[error("Consenso não alcançado: {0}")]
+    #[error("Consensus not reached: {0}")]
     ConsensusNotReached(String),
 
-    #[error("Erro no ReasoningBank: {0}")]
+    #[error("ReasoningBank error: {0}")]
     ReasoningBank(String),
 
-    #[error("Erro no servidor MCP: {0}")]
+    #[error("MCP server error: {0}")]
     McpServer(String),
 
-    #[error("Configuração não encontrada em: {0}")]
+    #[error("Configuration not found at: {0}")]
     ConfigNotFound(String),
 
     #[error("{0}")]
     Other(String),
 
     #[cfg(feature = "cli")]
-    #[error("Erro de entrada interativa: {0}")]
+    #[error("Interactive input error: {0}")]
     Dialoguer(String),
 }
 
@@ -63,12 +63,12 @@ impl From<dialoguer::Error> for TetradError {
 }
 
 impl TetradError {
-    /// Cria um erro genérico.
+    /// Creates a generic error.
     pub fn other<S: Into<String>>(msg: S) -> Self {
         Self::Other(msg.into())
     }
 
-    /// Cria um erro de configuração.
+    /// Creates a configuration error.
     pub fn config<S: Into<String>>(msg: S) -> Self {
         Self::Config(msg.into())
     }

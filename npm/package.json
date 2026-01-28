@@ -1,6 +1,6 @@
 {
   "name": "@samoradc/tetrad",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Quadruple Consensus MCP Server for Claude Code - Validates code using Codex, Gemini and Qwen",
   "mcpName": "io.github.SamoraDC/tetrad",
   "keywords": [

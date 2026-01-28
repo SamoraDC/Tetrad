@@ -8,24 +8,24 @@ use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 async fn main() -> TetradResult<()> {
     let cli = Cli::parse();
 
-    // Carrega configuração primeiro (sem logging ainda)
+    // Load configuration first (no logging yet)
     let config = if cli.config.exists() {
         Config::load(&cli.config).unwrap_or_else(|_| Config::default_config())
     } else {
         Config::default_config()
     };
 
-    // Determina o nível de log: flags CLI têm precedência sobre o config
+    // Determine log level: CLI flags take precedence over config
     let log_level = if cli.quiet {
         "error".to_string()
     } else if cli.verbose {
         "debug".to_string()
     } else {
-        // Usa o valor do config se nenhuma flag foi especificada
+        // Use config value if no flag was specified
         config.general.log_level.clone()
     };
 
-    // Inicializa logging com o nível apropriado
+    // Initialize logging with appropriate level
     let filter = EnvFilter::from_default_env().add_directive(
         format!("tetrad={}", log_level)
             .parse()
@@ -37,7 +37,7 @@ async fn main() -> TetradResult<()> {
         .with(filter)
         .init();
 
-    tracing::debug!("Configuração carregada de: {}", cli.config.display());
+    tracing::debug!("Configuration loaded from: {}", cli.config.display());
 
     match cli.command {
         Commands::Init { path } => {

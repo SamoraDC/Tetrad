@@ -1,34 +1,34 @@
-//! Regras de consenso do Tetrad.
+//! Consensus rules for Tetrad.
 //!
-//! Define as três regras de consenso disponíveis:
-//! - Golden: Unanimidade (todos devem votar PASS)
-//! - Strong: Consenso forte (3/3 CLIs concordam)
-//! - Weak: Consenso fraco (2+ CLIs concordam)
+//! Defines the three available consensus rules:
+//! - Golden: Unanimity (all must vote PASS)
+//! - Strong: Strong consensus (3/3 CLIs agree)
+//! - Weak: Weak consensus (2+ CLIs agree)
 
 use std::collections::HashMap;
 
 use crate::types::config::ConsensusRule as ConsensusRuleConfig;
 use crate::types::responses::{Decision, ModelVote, Vote};
 
-/// Trait para regras de consenso.
+/// Trait for consensus rules.
 pub trait ConsensusRule: Send + Sync {
-    /// Nome da regra.
+    /// Rule name.
     fn name(&self) -> &str;
 
-    /// Avalia os votos e retorna a decisão.
+    /// Evaluates votes and returns the decision.
     fn evaluate(&self, votes: &HashMap<String, ModelVote>, min_score: u8) -> Decision;
 
-    /// Número mínimo de votos necessários para consenso.
+    /// Minimum number of votes required for consensus.
     fn min_required(&self) -> usize;
 
-    /// Verifica se o consenso foi alcançado.
+    /// Checks if consensus was achieved.
     fn is_consensus_achieved(&self, votes: &HashMap<String, ModelVote>, min_score: u8) -> bool;
 }
 
-/// Regra de Ouro: Unanimidade necessária.
+/// Golden Rule: Unanimity required.
 ///
-/// Todos os avaliadores devem votar PASS com score >= min_score.
-/// É a regra mais restritiva, ideal para código crítico.
+/// All evaluators must vote PASS with score >= min_score.
+/// This is the most restrictive rule, ideal for critical code.
 #[derive(Debug, Clone, Default)]
 pub struct GoldenRule;
 
@@ -38,9 +38,9 @@ impl ConsensusRule for GoldenRule {
     }
 
     fn evaluate(&self, votes: &HashMap<String, ModelVote>, min_score: u8) -> Decision {
-        // Verifica mínimo de votos necessários
+        // Check minimum required votes
         if votes.len() < self.min_required() {
-            return Decision::Revise; // Sem votos suficientes, precisa esperar
+            return Decision::Revise; // Not enough votes, need to wait
         }
 
         let all_pass = votes
@@ -59,7 +59,7 @@ impl ConsensusRule for GoldenRule {
     }
 
     fn min_required(&self) -> usize {
-        3 // Todos os 3 CLIs
+        3 // All 3 CLIs
     }
 
     fn is_consensus_achieved(&self, votes: &HashMap<String, ModelVote>, min_score: u8) -> bool {
@@ -70,10 +70,10 @@ impl ConsensusRule for GoldenRule {
     }
 }
 
-/// Consenso Forte: 3/3 CLIs devem concordar.
+/// Strong Consensus: 3/3 CLIs must agree.
 ///
-/// Todos os avaliadores devem concordar na decisão (PASS ou FAIL).
-/// É a regra padrão, balanceando rigor e praticidade.
+/// All evaluators must agree on the decision (PASS or FAIL).
+/// This is the default rule, balancing rigor and practicality.
 #[derive(Debug, Clone, Default)]
 pub struct StrongRule;
 
@@ -83,9 +83,9 @@ impl ConsensusRule for StrongRule {
     }
 
     fn evaluate(&self, votes: &HashMap<String, ModelVote>, min_score: u8) -> Decision {
-        // Verifica mínimo de votos necessários (3/3)
+        // Check minimum required votes (3/3)
         if votes.len() < self.min_required() {
-            return Decision::Revise; // Sem votos suficientes, precisa esperar
+            return Decision::Revise; // Not enough votes, need to wait
         }
 
         let pass_count = votes.values().filter(|v| v.vote == Vote::Pass).count();
@@ -93,18 +93,18 @@ impl ConsensusRule for StrongRule {
 
         let avg_score = self.calculate_average_score(votes);
 
-        // Strong Rule: 3/3 devem concordar
-        // Todos passam (3/3 PASS)
+        // Strong Rule: 3/3 must agree
+        // All pass (3/3 PASS)
         if pass_count == self.min_required() && avg_score >= min_score {
             return Decision::Pass;
         }
 
-        // Todos falham (3/3 FAIL)
+        // All fail (3/3 FAIL)
         if fail_count == self.min_required() {
             return Decision::Block;
         }
 
-        // Qualquer discordância ou score baixo = revisão
+        // Any disagreement or low score = revision
         Decision::Revise
     }
 
@@ -132,10 +132,10 @@ impl StrongRule {
     }
 }
 
-/// Consenso Fraco: 2+ CLIs concordam.
+/// Weak Consensus: 2+ CLIs agree.
 ///
-/// Maioria simples decide. É a regra mais permissiva,
-/// útil para protótipos e experimentos.
+/// Simple majority decides. This is the most permissive rule,
+/// useful for prototypes and experiments.
 #[derive(Debug, Clone, Default)]
 pub struct WeakRule;
 
@@ -152,7 +152,7 @@ impl ConsensusRule for WeakRule {
         let pass_votes: Vec<_> = votes.values().filter(|v| v.vote == Vote::Pass).collect();
         let fail_count = votes.values().filter(|v| v.vote == Vote::Fail).count();
 
-        // Maioria passa (2+ de 3) - usa média apenas dos votos PASS
+        // Majority passes (2+ of 3) - uses average only from PASS votes
         if pass_votes.len() >= 2 {
             let avg_pass_score = self.calculate_average_score_of(&pass_votes);
             if avg_pass_score >= min_score {
@@ -160,17 +160,17 @@ impl ConsensusRule for WeakRule {
             }
         }
 
-        // Maioria falha (2+ de 3)
+        // Majority fails (2+ of 3)
         if fail_count >= 2 {
             return Decision::Block;
         }
 
-        // Empate ou sem maioria clara
+        // Tie or no clear majority
         Decision::Revise
     }
 
     fn min_required(&self) -> usize {
-        2 // Apenas 2 necessários para decisão
+        2 // Only 2 required for decision
     }
 
     fn is_consensus_achieved(&self, votes: &HashMap<String, ModelVote>, min_score: u8) -> bool {
@@ -193,7 +193,7 @@ impl WeakRule {
     }
 }
 
-/// Cria uma regra de consenso a partir da configuração.
+/// Creates a consensus rule from configuration.
 pub fn create_rule(config: &ConsensusRuleConfig) -> Box<dyn ConsensusRule> {
     match config {
         ConsensusRuleConfig::Golden => Box::new(GoldenRule),

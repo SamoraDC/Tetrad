@@ -1,13 +1,13 @@
-//! Handlers das ferramentas MCP do Tetrad.
+//! MCP tool handlers for Tetrad.
 //!
-//! Este módulo implementa as 6 ferramentas expostas pelo servidor MCP:
+//! This module implements the 6 tools exposed by the MCP server:
 //!
-//! 1. `tetrad_review_plan` - Revisa planos de implementação
-//! 2. `tetrad_review_code` - Revisa código antes de salvar
-//! 3. `tetrad_review_tests` - Revisa testes
-//! 4. `tetrad_confirm` - Confirma acordo com feedback
-//! 5. `tetrad_final_check` - Verificação final antes de commit
-//! 6. `tetrad_status` - Status dos avaliadores
+//! 1. `tetrad_review_plan` - Reviews implementation plans
+//! 2. `tetrad_review_code` - Reviews code before saving
+//! 3. `tetrad_review_tests` - Reviews tests
+//! 4. `tetrad_confirm` - Confirms agreement with feedback
+//! 5. `tetrad_final_check` - Final check before commit
+//! 6. `tetrad_status` - Evaluator status
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -30,92 +30,92 @@ use crate::TetradResult;
 use super::protocol::{ToolDescription, ToolResult};
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Parâmetros das ferramentas
+// Tool parameters
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Parâmetros para review_plan.
+/// Parameters for review_plan.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReviewPlanParams {
-    /// Plano a ser revisado.
+    /// Plan to be reviewed.
     pub plan: String,
 
-    /// Contexto adicional.
+    /// Additional context.
     #[serde(default)]
     pub context: Option<String>,
 }
 
-/// Parâmetros para review_code.
+/// Parameters for review_code.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReviewCodeParams {
-    /// Código a ser revisado.
+    /// Code to be reviewed.
     pub code: String,
 
-    /// Linguagem do código.
+    /// Code language.
     pub language: String,
 
-    /// Caminho do arquivo.
+    /// File path.
     #[serde(default)]
     pub file_path: Option<String>,
 
-    /// Contexto adicional.
+    /// Additional context.
     #[serde(default)]
     pub context: Option<String>,
 }
 
-/// Parâmetros para review_tests.
+/// Parameters for review_tests.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReviewTestsParams {
-    /// Código dos testes.
+    /// Test code.
     pub tests: String,
 
-    /// Linguagem.
+    /// Language.
     pub language: String,
 
-    /// Contexto adicional.
+    /// Additional context.
     #[serde(default)]
     pub context: Option<String>,
 }
 
-/// Parâmetros para confirm.
+/// Parameters for confirm.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfirmParams {
-    /// ID da request original.
+    /// Original request ID.
     pub request_id: String,
 
-    /// Se concorda com o feedback.
+    /// Whether agrees with feedback.
     pub agreed: bool,
 
-    /// Notas adicionais.
+    /// Additional notes.
     #[serde(default)]
     pub notes: Option<String>,
 }
 
-/// Parâmetros para final_check.
+/// Parameters for final_check.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FinalCheckParams {
-    /// Código a verificar.
+    /// Code to verify.
     pub code: String,
 
-    /// Linguagem.
+    /// Language.
     pub language: String,
 
-    /// ID da request anterior (para comparação).
+    /// Previous request ID (for comparison).
     #[serde(default)]
     pub previous_request_id: Option<String>,
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Handler de ferramentas
+// Tool handler
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Handler das ferramentas MCP do Tetrad.
+/// MCP tool handler for Tetrad.
 pub struct ToolHandler {
     config: Config,
     codex: CodexExecutor,
     gemini: GeminiExecutor,
     qwen: QwenExecutor,
     consensus: ConsensusEngine,
-    // Usa Mutex em vez de RwLock porque rusqlite::Connection não é Sync
+    // Uses Mutex instead of RwLock because rusqlite::Connection is not Sync
     reasoning_bank: Arc<Mutex<Option<ReasoningBank>>>,
     cache: Arc<RwLock<EvaluationCache>>,
     hooks: HookSystem,
@@ -123,14 +123,14 @@ pub struct ToolHandler {
 }
 
 impl ToolHandler {
-    /// Cria um novo handler de ferramentas.
+    /// Creates a new tool handler.
     pub fn new(config: Config) -> TetradResult<Self> {
         let codex = CodexExecutor::from_config(&config.executors.codex);
         let gemini = GeminiExecutor::from_config(&config.executors.gemini);
         let qwen = QwenExecutor::from_config(&config.executors.qwen);
         let consensus = ConsensusEngine::new(config.consensus.clone());
 
-        // Inicializa ReasoningBank se habilitado
+        // Initialize ReasoningBank if enabled
         let reasoning_bank = if config.reasoning.enabled {
             let bank = ReasoningBank::new(&config.reasoning.db_path)?;
             Some(bank)
@@ -138,7 +138,7 @@ impl ToolHandler {
             None
         };
 
-        // Inicializa cache usando configurações
+        // Initialize cache using settings
         let cache = EvaluationCache::new(
             config.cache.capacity,
             Duration::from_secs(config.cache.ttl_secs),
@@ -157,22 +157,22 @@ impl ToolHandler {
         })
     }
 
-    /// Lista todas as ferramentas disponíveis.
+    /// Lists all available tools.
     pub fn list_tools() -> Vec<ToolDescription> {
         vec![
             ToolDescription::new(
                 "tetrad_review_plan",
-                "Revisa um plano de implementação antes de começar a codificar. Use ANTES de implementar qualquer feature.",
+                "Reviews an implementation plan before starting to code. Use BEFORE implementing any feature.",
                 json!({
                     "type": "object",
                     "properties": {
                         "plan": {
                             "type": "string",
-                            "description": "O plano de implementação a ser revisado"
+                            "description": "The implementation plan to be reviewed"
                         },
                         "context": {
                             "type": "string",
-                            "description": "Contexto adicional sobre o projeto ou requisitos"
+                            "description": "Additional context about the project or requirements"
                         }
                     },
                     "required": ["plan"]
@@ -180,25 +180,25 @@ impl ToolHandler {
             ),
             ToolDescription::new(
                 "tetrad_review_code",
-                "Revisa código antes de salvar. Use ANTES de salvar qualquer arquivo de código.",
+                "Reviews code before saving. Use BEFORE saving any code file.",
                 json!({
                     "type": "object",
                     "properties": {
                         "code": {
                             "type": "string",
-                            "description": "O código a ser revisado"
+                            "description": "The code to be reviewed"
                         },
                         "language": {
                             "type": "string",
-                            "description": "Linguagem de programação (rust, python, javascript, etc.)"
+                            "description": "Programming language (rust, python, javascript, etc.)"
                         },
                         "file_path": {
                             "type": "string",
-                            "description": "Caminho do arquivo (opcional)"
+                            "description": "File path (optional)"
                         },
                         "context": {
                             "type": "string",
-                            "description": "Contexto adicional"
+                            "description": "Additional context"
                         }
                     },
                     "required": ["code", "language"]
@@ -206,21 +206,21 @@ impl ToolHandler {
             ),
             ToolDescription::new(
                 "tetrad_review_tests",
-                "Revisa testes antes de finalizar. Use ANTES de considerar os testes prontos.",
+                "Reviews tests before finalizing. Use BEFORE considering tests ready.",
                 json!({
                     "type": "object",
                     "properties": {
                         "tests": {
                             "type": "string",
-                            "description": "O código dos testes a serem revisados"
+                            "description": "The test code to be reviewed"
                         },
                         "language": {
                             "type": "string",
-                            "description": "Linguagem de programação"
+                            "description": "Programming language"
                         },
                         "context": {
                             "type": "string",
-                            "description": "Contexto sobre o que está sendo testado"
+                            "description": "Context about what is being tested"
                         }
                     },
                     "required": ["tests", "language"]
@@ -228,21 +228,21 @@ impl ToolHandler {
             ),
             ToolDescription::new(
                 "tetrad_confirm",
-                "Confirma que você concorda com o feedback recebido e fez as correções necessárias.",
+                "Confirms that you agree with the feedback received and made the necessary corrections.",
                 json!({
                     "type": "object",
                     "properties": {
                         "request_id": {
                             "type": "string",
-                            "description": "ID da avaliação anterior"
+                            "description": "Previous evaluation ID"
                         },
                         "agreed": {
                             "type": "boolean",
-                            "description": "Se concorda com o feedback"
+                            "description": "Whether agrees with feedback"
                         },
                         "notes": {
                             "type": "string",
-                            "description": "Notas sobre as correções feitas"
+                            "description": "Notes about corrections made"
                         }
                     },
                     "required": ["request_id", "agreed"]
@@ -250,21 +250,21 @@ impl ToolHandler {
             ),
             ToolDescription::new(
                 "tetrad_final_check",
-                "Verificação final antes de commit. Use após todas as correções para obter certificação.",
+                "Final check before commit. Use after all corrections to obtain certification.",
                 json!({
                     "type": "object",
                     "properties": {
                         "code": {
                             "type": "string",
-                            "description": "O código final a ser verificado"
+                            "description": "The final code to be verified"
                         },
                         "language": {
                             "type": "string",
-                            "description": "Linguagem de programação"
+                            "description": "Programming language"
                         },
                         "previous_request_id": {
                             "type": "string",
-                            "description": "ID da avaliação anterior para comparação"
+                            "description": "Previous evaluation ID for comparison"
                         }
                     },
                     "required": ["code", "language"]
@@ -272,7 +272,7 @@ impl ToolHandler {
             ),
             ToolDescription::new(
                 "tetrad_status",
-                "Mostra o status dos avaliadores (Codex, Gemini, Qwen).",
+                "Shows the status of evaluators (Codex, Gemini, Qwen).",
                 json!({
                     "type": "object",
                     "properties": {},
@@ -282,7 +282,7 @@ impl ToolHandler {
         ]
     }
 
-    /// Processa uma chamada de ferramenta.
+    /// Processes a tool call.
     pub async fn handle_tool_call(&self, name: &str, arguments: Value) -> ToolResult {
         tracing::info!(tool = name, "Processing tool call");
 
@@ -298,7 +298,7 @@ impl ToolHandler {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Handlers individuais
+    // Individual handlers
     // ═══════════════════════════════════════════════════════════════════════
 
     async fn handle_review_plan(&self, arguments: Value) -> ToolResult {
@@ -398,9 +398,9 @@ impl ToolHandler {
             "notes": params.notes,
             "can_proceed": params.agreed,
             "message": if params.agreed {
-                "Confirmação registrada. Você pode prosseguir com o próximo passo."
+                "Confirmation registered. You can proceed to the next step."
             } else {
-                "Discordância registrada. Por favor, revise o código novamente."
+                "Disagreement registered. Please review the code again."
             }
         });
 
@@ -440,11 +440,11 @@ impl ToolHandler {
                 };
 
                 let message = if certified {
-                    "CERTIFICADO: Código aprovado pelo consenso quádruplo do Tetrad."
+                    "CERTIFIED: Code approved by Tetrad's quadruple consensus."
                 } else if !meets_requirements {
-                    "NÃO CERTIFICADO: Código não atingiu consenso ou score mínimo."
+                    "NOT CERTIFIED: Code did not reach consensus or minimum score."
                 } else {
-                    "NÃO CERTIFICADO: Confirmação prévia pendente. Use tetrad_confirm primeiro."
+                    "NOT CERTIFIED: Prior confirmation pending. Use tetrad_confirm first."
                 };
 
                 let response = json!({
@@ -545,10 +545,10 @@ impl ToolHandler {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Métodos auxiliares
+    // Helper methods
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// Executa uma avaliação e retorna o resultado formatado.
+    /// Executes an evaluation and returns formatted result.
     async fn evaluate_request(&self, request: EvaluationRequest) -> ToolResult {
         match self.evaluate_internal(request).await {
             Ok(result) => self.format_result(&result),
@@ -556,18 +556,18 @@ impl ToolHandler {
         }
     }
 
-    /// Executa a avaliação interna.
+    /// Executes the internal evaluation.
     async fn evaluate_internal(
         &self,
         request: EvaluationRequest,
     ) -> TetradResult<EvaluationResult> {
-        // Executa hooks pre_evaluate
+        // Run pre_evaluate hooks
         let hook_result = self.hooks.run_pre_evaluate(&request).await?;
 
-        // Trata resultado do hook
+        // Handle hook result
         let request = match hook_result {
             crate::hooks::HookResult::Skip => {
-                // Retorna resultado de skip
+                // Return skip result
                 return Ok(EvaluationResult::success(
                     &request.request_id,
                     100,
@@ -575,14 +575,14 @@ impl ToolHandler {
                 ));
             }
             crate::hooks::HookResult::ModifyRequest(modified) => {
-                // Usa a request modificada pelo hook
+                // Use the modified request from hook
                 tracing::info!("Request modified by pre_evaluate hook");
                 modified
             }
             crate::hooks::HookResult::Continue => request,
         };
 
-        // Consulta ReasoningBank
+        // Query ReasoningBank
         let known_patterns = {
             let bank = self.reasoning_bank.lock().await;
             if let Some(ref b) = *bank {
@@ -592,7 +592,7 @@ impl ToolHandler {
             }
         };
 
-        // Log de patterns conhecidos
+        // Log known patterns
         if !known_patterns.is_empty() {
             tracing::info!(
                 patterns_count = known_patterns.len(),
@@ -600,16 +600,16 @@ impl ToolHandler {
             );
         }
 
-        // Coleta votos dos executores em paralelo
+        // Collect votes from executors in parallel
         let votes = self.collect_votes(&request).await;
 
-        // Aplica consenso
+        // Apply consensus
         let result = self.consensus.evaluate(votes, &request.request_id);
 
-        // Executa hooks post_evaluate
+        // Run post_evaluate hooks
         self.hooks.run_post_evaluate(&request, &result).await?;
 
-        // Executa hooks específicos
+        // Run specific hooks
         if result.consensus_achieved {
             self.hooks.run_on_consensus(&result).await?;
         }
@@ -617,7 +617,7 @@ impl ToolHandler {
             self.hooks.run_on_block(&result).await?;
         }
 
-        // Registra no ReasoningBank
+        // Register in ReasoningBank
         {
             let mut bank = self.reasoning_bank.lock().await;
             if let Some(ref mut b) = *bank {
@@ -635,11 +635,11 @@ impl ToolHandler {
         Ok(result)
     }
 
-    /// Coleta votos de todos os executores habilitados.
+    /// Collects votes from all enabled executors.
     async fn collect_votes(&self, request: &EvaluationRequest) -> HashMap<String, ModelVote> {
         let mut votes = HashMap::new();
 
-        // Executa em paralelo
+        // Execute in parallel
         let (codex_vote, gemini_vote, qwen_vote) = tokio::join!(
             self.get_vote_if_enabled(&self.codex, request, self.config.executors.codex.enabled),
             self.get_vote_if_enabled(&self.gemini, request, self.config.executors.gemini.enabled),
@@ -659,7 +659,7 @@ impl ToolHandler {
         votes
     }
 
-    /// Obtém voto de um executor se habilitado.
+    /// Gets vote from an executor if enabled.
     async fn get_vote_if_enabled<E: CliExecutor>(
         &self,
         executor: &E,
@@ -678,7 +678,7 @@ impl ToolHandler {
                     error = %e,
                     "Executor failed, using fallback vote"
                 );
-                // Voto neutro em caso de erro
+                // Neutral vote in case of error
                 Some(ModelVote::new(
                     executor.name(),
                     crate::types::responses::Vote::Warn,
@@ -688,7 +688,7 @@ impl ToolHandler {
         }
     }
 
-    /// Formata o resultado para retorno MCP.
+    /// Formats the result for MCP return.
     fn format_result(&self, result: &EvaluationResult) -> ToolResult {
         let status = match result.decision {
             Decision::Pass => "PASS",

@@ -1,4 +1,4 @@
-//! Interface de linha de comando do Tetrad.
+//! Command line interface for Tetrad.
 
 pub mod commands;
 pub mod interactive;
@@ -6,85 +6,85 @@ pub mod interactive;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
-/// Tetrad - CLI de Consenso Quádruplo para Claude Code.
+/// Tetrad - Quadruple Consensus CLI for Claude Code.
 #[derive(Parser, Debug)]
 #[command(name = "tetrad")]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
-    /// Arquivo de configuração.
+    /// Configuration file.
     #[arg(short, long, default_value = "tetrad.toml")]
     pub config: PathBuf,
 
-    /// Modo verbose.
+    /// Verbose mode.
     #[arg(short, long)]
     pub verbose: bool,
 
-    /// Modo silencioso.
+    /// Quiet mode.
     #[arg(short, long)]
     pub quiet: bool,
 
-    /// Comando a executar.
+    /// Command to execute.
     #[command(subcommand)]
     pub command: Commands,
 }
 
-/// Comandos disponíveis.
+/// Available commands.
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Inicializa configuração no diretório atual.
+    /// Initialize configuration in the current directory.
     Init {
-        /// Diretório de destino (padrão: diretório atual).
+        /// Target directory (default: current directory).
         #[arg(short, long)]
         path: Option<PathBuf>,
     },
 
-    /// Inicia o servidor MCP.
+    /// Start the MCP server.
     Serve {
-        /// Porta para o servidor (se usar HTTP transport).
+        /// Port for the server (if using HTTP transport).
         #[arg(short, long)]
         port: Option<u16>,
     },
 
-    /// Mostra status das CLIs (codex, gemini, qwen).
+    /// Show CLI status (codex, gemini, qwen).
     Status,
 
-    /// Configura opções interativamente.
+    /// Configure options interactively.
     Config,
 
-    /// Diagnostica problemas de configuração.
+    /// Diagnose configuration issues.
     Doctor,
 
-    /// Mostra versão.
+    /// Show version.
     Version,
 
-    /// Avalia código manualmente (sem MCP).
+    /// Evaluate code manually (without MCP).
     Evaluate {
-        /// Código a avaliar (ou caminho para arquivo com @).
+        /// Code to evaluate (or file path with @).
         #[arg(short = 'c', long)]
         code: String,
 
-        /// Linguagem do código.
+        /// Code language.
         #[arg(short, long, default_value = "auto")]
         language: String,
     },
 
-    /// Mostra histórico de avaliações do ReasoningBank.
+    /// Show evaluation history from ReasoningBank.
     History {
-        /// Limite de entradas a mostrar.
+        /// Limit of entries to show.
         #[arg(short, long, default_value = "20")]
         limit: usize,
     },
 
-    /// Exporta patterns do ReasoningBank.
+    /// Export patterns from ReasoningBank.
     Export {
-        /// Arquivo de destino.
+        /// Output file.
         #[arg(short, long, default_value = "tetrad-patterns.json")]
         output: PathBuf,
     },
 
-    /// Importa patterns para o ReasoningBank.
+    /// Import patterns into ReasoningBank.
     Import {
-        /// Arquivo de origem.
+        /// Input file.
         input: PathBuf,
     },
 }
