@@ -145,11 +145,7 @@ pub async fn status(config: &Config) -> TetradResult<()> {
 
         let available = executor.is_available().await;
         let status_icon = if available { "✓" } else { "✗" };
-        let status_text = if available {
-            "available"
-        } else {
-            "not found"
-        };
+        let status_text = if available { "available" } else { "not found" };
 
         println!("  {} {} - {}", status_icon, name, status_text);
 
@@ -221,11 +217,7 @@ pub async fn doctor(config: &Config) -> TetradResult<()> {
 
         if executor.is_available().await {
             available_count += 1;
-            println!(
-                "✓ {} is available (command: {})",
-                name,
-                executor.command()
-            );
+            println!("✓ {} is available (command: {})", name, executor.command());
         } else {
             warnings.push(format!(
                 "{} is not installed (expected command: {})",
