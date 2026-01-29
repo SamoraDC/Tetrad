@@ -1,0 +1,48 @@
+Apresentando o Tetrad: Validação de Código por Consenso Quádruplo
+
+Desenvolvi um servidor MCP em Rust que aborda um problema crescente: como garantir que código gerado por IA seja confiável?
+
+O PROBLEMA
+
+Assistentes como Claude ou Copilot são uma única fonte de avaliação. Cada modelo tem vieses e pontos cegos. Um código pode parecer correto para um, mas conter problemas que outro detectaria.
+
+A SOLUÇÃO
+
+O Tetrad orquestra três avaliadores independentes (Codex, Gemini CLI, Qwen) através de um protocolo de consenso. Nenhum código é aprovado sem concordância de múltiplas IAs.
+
+COMO O MCP FUNCIONA
+
+O Model Context Protocol permite que assistentes de IA se conectem a ferramentas externas via JSON-RPC. Na prática:
+
+1. O Claude Code inicia "tetrad serve" e mantém conexão via stdin/stdout
+2. Envia "tools/list" e recebe as 6 ferramentas disponíveis
+3. Ao revisar código, envia "tools/call" com os parâmetros
+4. O Tetrad executa os 3 avaliadores em paralelo, aplica consenso e retorna o resultado
+
+Fluxo simplificado:
+Claude -> tetrad_review_code({code, language})
+Tetrad -> [Codex + Gemini + Qwen em paralelo]
+Tetrad -> Aplica regra de consenso
+Tetrad -> {decision: "PASS", score: 85, findings: [...]}
+
+REGRAS DE CONSENSO
+
+- Golden: Unanimidade (3/3 PASS) - para código crítico
+- Strong: Todos concordam na decisão - padrão
+- Weak: Maioria (2/3) decide - para protótipos
+
+REASONINGBANK
+
+Sistema de aprendizado em SQLite que implementa RETRIEVE-JUDGE-DISTILL-CONSOLIDATE. O Tetrad aprende com cada avaliação, identificando anti-patterns e boas práticas do seu projeto.
+
+INSTALAÇÃO
+
+cargo install tetrad
+npx tetrad
+claude mcp add tetrad -- tetrad serve
+
+Código: https://github.com/SamoraDC/tetrad
+
+O futuro do desenvolvimento com IA não está em confiar em um único modelo, mas em sistemas de consenso com múltiplas perspectivas.
+
+#OpenSource #Rust #MCP #ClaudeCode #IA
